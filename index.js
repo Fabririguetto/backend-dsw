@@ -1,19 +1,14 @@
-/* tp desarrollo backend entrega 1 */
 const readline = require('readline');
 
 let productos = {
-    producto: [ 
-        { 
-            id,
-            articulo,
-            descripcion,
-            cantidad_stock,
-            precio_venta
-        }
-    ]
+    producto: []
 };
 
-let contadorProductos = 0;
+let contadorProductos = 1;
+const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+});
 
 function generarID() {
     return contadorProductos++;
@@ -25,40 +20,112 @@ function menuprincipal() {
     console.log(`
     [1] Alta de productos
     [2] Modificacion de productos
+    [3] Ver productos
+    [0] Salir
     `);
 }
 
 function alta() {
-    let id = generarID();
-    let articulo = prompt("Ingrese el articulo del artículo:");
-    let descripcion = prompt("Ingrese la descripción del artículo:");
-    let cantidad_stock = prompt("Ingrese la cantidad en stock:");
-    let precio_venta = prompt("Ingrese el precio de venta:");
-    
-    let nuevoProducto = {
-        id: id,
-        articulo: articulo,
-        descripcion: descripcion,
-        cantidad_stock: cantidad_stock,
-        precio_venta: precio_venta
-    };
+    let id_prod = generarID();
 
-    productos.push(nuevoProducto)
+    rl.question('Ingrese el artículo: ', (art) => {
+        rl.question('Ingrese la descripción: ', (des) => {
+            rl.question('Ingrese la cantidad en stock: ', (cant) => {
+                rl.question('Ingrese el precio de venta: ', (precio) => {
+                    let nuevoProducto = {
+                        id: id_prod,
+                        articulo: art.trim(),
+                        descripcion: des.trim(),
+                        cantidad_stock: cant.trim(),
+                        precio_venta: precio.trim()
+                    };
+                
+                    productos.producto.push(nuevoProducto);
+                    console.log("¡Producto agregado!");
+                    console.log(nuevoProducto);
+                    seleccionarOpcion();
+                });
+            });
+        });
+    });
 }
 
-let opcion = -1;
+function modificacion () {
+    mostrar();
+    rl.question('Ingrese el id del producto a modificar: ', (id) => {
+        id = parseInt(id) -1;
+        
+        if (id < 0 || id >= productos.producto.length || isNaN(id)) {
+            console.log("ID de producto no válido.");
+            seleccionarOpcion();
+            return;
+        }
 
-while (opcion !== 0) {
-    menuprincipal();
-    let opcion = parseInt(prompt("Elija la opción deseada: "));
-
-    while (opcion < 0 || opcion > 2) {
-        opcion = parseInt(prompt("\n¡OPCIÓN INCORRECTA!: Elija la opción deseada: "));
-    }
-
-    if (opcion === 1) {
-        Alta();
-    } else if (opcion === 2) {
-       /* modificacion; */
-    }
+        rl.question('Ingrese el nuevo artículo: ', (art) => {
+            rl.question('Ingrese la nueva descripción: ', (des) => {
+                rl.question('Ingrese la nueva cantidad en stock: ', (cant) => {
+                    rl.question('Ingrese el nuevo precio de venta: ', (precio) => {
+                        let productoModificado = {
+                            id: id + 1,
+                            articulo: art.trim(),
+                            descripcion: des.trim(),
+                            cantidad_stock: cant.trim(),
+                            precio_venta: precio.trim()
+                        };
+                    
+                        productos.producto[id] = productoModificado;
+                        console.log("¡Producto modificado!");
+                        console.log(productoModificado);
+                        seleccionarOpcion();
+                    });
+                });
+            });
+        });
+    });
 }
+
+function mostrar() {
+    console.log("|-----|--------------------|--------------------------|-------------------|-----------------|");
+    console.log("| ID  |   Artículo         |   Descripción            | Cantidad en stock | Precio de venta |");
+    console.log("|-----|--------------------|--------------------------|-------------------|-----------------|");
+
+    productos.producto.forEach(producto => {
+        let id = producto.id.toString().padEnd(3, ' ');
+        let articulo = producto.articulo.padEnd(18, ' ');
+        let descripcion = producto.descripcion.padEnd(24, ' ');
+        let cantidad = producto.cantidad_stock.padEnd(17, ' ');
+        let precio = producto.precio_venta.padEnd(15, ' ');
+
+        console.log(`| ${id} | ${articulo} | ${descripcion} | ${cantidad} | ${precio} |`);
+        console.log("|-----|--------------------|--------------------------|-------------------|-----------------|");
+    });
+}
+
+function seleccionarOpcion() {
+    rl.question('Presione "Enter" para mostrar el menú principal: ', () => {
+        console.log("\n");
+        menuprincipal();
+        rl.question('Elija la opción deseada: ', (input) => {
+            let opcion = parseInt(input.trim());
+            
+            if (opcion < 0 || opcion > 3 || isNaN(opcion)) {
+                console.log("\n¡OPCIÓN INCORRECTA!");
+                seleccionarOpcion();
+            } else {
+                if (opcion === 1) {
+                    alta();
+                } else if (opcion === 2) {
+                    modificacion();
+                } else if (opcion === 3) {
+                    mostrar();
+                    seleccionarOpcion();
+                } else if (opcion === 0) {
+                    console.log("¡Hasta luego!");
+                    rl.close();
+                }
+            }
+        });
+    });
+}
+
+seleccionarOpcion();
