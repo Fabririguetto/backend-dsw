@@ -1,5 +1,6 @@
 const readline = require('readline');
 
+
 let productos = {
     producto: []
 };
@@ -29,17 +30,43 @@ function alta() {
     let id_prod = generarID();
 
     rl.question('Ingrese el artículo: ', (art) => {
+        if (typeof art !== 'string' || art.trim() === '') {
+            console.log("El artículo debe ser un texto no vacío.");
+            seleccionarOpcion();
+            return;
+        }
+
         rl.question('Ingrese la descripción: ', (des) => {
+            if (typeof des !== 'string' || des.trim() === '') {
+                console.log("La descripción debe ser un texto no vacío.");
+                seleccionarOpcion();
+                return;
+            }
+
             rl.question('Ingrese la cantidad en stock: ', (cant) => {
+                let cantidad = parseInt(cant.trim());
+                if (isNaN(cantidad) || cantidad < 0) {
+                    console.log("La cantidad en stock debe ser un número válido.");
+                    seleccionarOpcion();
+                    return;
+                }
+
                 rl.question('Ingrese el precio de venta: ', (precio) => {
+                    let precioVenta = parseFloat(precio.trim());
+                    if (isNaN(precioVenta) || precioVenta < 0) {
+                        console.log("El precio de venta debe ser un número válido.");
+                        seleccionarOpcion();
+                        return;
+                    }
+
                     let nuevoProducto = {
                         id: id_prod,
                         articulo: art.trim(),
                         descripcion: des.trim(),
-                        cantidad_stock: cant.trim(),
-                        precio_venta: precio.trim()
+                        cantidad_stock: cantidad,
+                        precio_venta: precioVenta
                     };
-                
+
                     productos.producto.push(nuevoProducto);
                     console.log("¡Producto agregado!");
                     console.log(nuevoProducto);
@@ -50,11 +77,11 @@ function alta() {
     });
 }
 
-function modificacion () {
+function modificacion() {
     mostrar();
     rl.question('Ingrese el id del producto a modificar: ', (id) => {
-        id = parseInt(id) -1;
-        
+        id = parseInt(id) - 1;
+
         if (id < 0 || id >= productos.producto.length || isNaN(id)) {
             console.log("ID de producto no válido.");
             seleccionarOpcion();
@@ -62,17 +89,42 @@ function modificacion () {
         }
 
         rl.question('Ingrese el nuevo artículo: ', (art) => {
+            if (typeof art !== 'string' || art.trim() === '') {
+                console.log("El artículo debe ser un texto no vacío.");
+                seleccionarOpcion();
+                return;
+            }
+
             rl.question('Ingrese la nueva descripción: ', (des) => {
+                if (typeof des !== 'string' || des.trim() === '') {
+                    console.log("La descripción debe ser un texto no vacío.");
+                    seleccionarOpcion();
+                    return;
+                }
+
                 rl.question('Ingrese la nueva cantidad en stock: ', (cant) => {
+                    let cantidad = parseInt(cant.trim());
+                    while (isNaN(cantidad) || cantidad < 0) {
+                        console.log("La cantidad en stock debe ser un número válido.");
+                        seleccionarOpcion();
+                        return;
+                    }
+
                     rl.question('Ingrese el nuevo precio de venta: ', (precio) => {
+                        let precioVenta = parseFloat(precio.trim());
+                        if (isNaN(precioVenta) || precioVenta < 0) {
+                            console.log("El precio de venta debe ser un número válido.");
+                            
+                        }
+
                         let productoModificado = {
                             id: id + 1,
                             articulo: art.trim(),
                             descripcion: des.trim(),
-                            cantidad_stock: cant.trim(),
-                            precio_venta: precio.trim()
+                            cantidad_stock: cantidad,
+                            precio_venta: precioVenta
                         };
-                    
+
                         productos.producto[id] = productoModificado;
                         console.log("¡Producto modificado!");
                         console.log(productoModificado);
