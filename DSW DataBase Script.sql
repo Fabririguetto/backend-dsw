@@ -1,13 +1,13 @@
 CREATE DATABASE DSW_gestion;
 
 CREATE TABLE productos (
-idProducto int not null primary key,
+idProducto int not null primary key AUTO_INCREMENT,
 articulo varchar(50),
 descripcion varchar(50), 
 cantidad int);
 
 CREATE TABLE clientes (
-idCliente int not null primary key,
+idCliente int not null primary key AUTO_INCREMENT,
 dni varchar(10),
 nombre_apellidoCli varchar(50), 
 direccion varchar(50),
@@ -15,13 +15,13 @@ contacto varchar(100)
 );
 
 CREATE TABLE sucursales (
-idSucursal int not null primary key,
+idSucursal int not null primary key AUTO_INCREMENT,
 nombreSucursal varchar (50),
 direccion varchar (50)
 );
 
 CREATE TABLE empleados (
-DNI_CUIL varchar (15) not null primary key,
+DNI_CUIL varchar (15) not null primary key AUTO_INCREMENT,
 nombre_apellidoEmp varchar(50),
 contacto varchar (100),
 idSucursal int,
@@ -29,7 +29,7 @@ foreign key (idSucursal) references sucursales (idSucursal)
 );
 
 CREATE TABLE ventas (
-idVenta int not null primary key,
+idVenta int not null primary key AUTO_INCREMENT,
 montoTotal decimal (18,2),
 idSucursal int,
 idCliente int,

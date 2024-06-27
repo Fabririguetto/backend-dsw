@@ -1,183 +1,102 @@
-const readline = require('readline');
+const mysql = require('mysql2/promise');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const app = express();
+const port = process.env.PORT || 3500;
 
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(cors());
 
-let productos = {
-    producto: []
+const conexionConfig = {
+    host: 'localhost',
+    user: 'root',
+    password: 'root',
+    database: 'dsw_gestion'
 };
 
-let contadorProductos = 1;
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
+async function getConnection() {
+    try {
+        const pool = await mysql.createPool(conexionConfig);
+        return pool.getConnection();
+    } catch (error) {
+        console.error('Database connection failed:', error);
+        throw error;
+    }
+}
+
+// Generic function to handle SQL queries and responses
+async function handleQuery(req, res, query) {
+    try {
+        const connection = await getConnection();
+        const [rows] = await connection.query(query);
+
+        if (rows.length === 0) {
+            res.status(404).json({ error: 'No hay resultados encontrados.' });
+        } else {
+            console.table(rows);
+            res.json(rows);
+        }
+
+        connection.release();
+    } catch (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error en la consulta.' });
+    }
+}
+
+// Route to fetch productos
+app.get('/productos', async (req, res) => {
+    const query = 'SELECT * FROM productos';
+    await handleQuery(req, res, query);
 });
 
-function generarID() {
-    return contadorProductos++;
-}
+app.post("/productos", async (req, res) => {
+    const { articulo, descripcion, cantidad } = req.body;
 
-function menuprincipal() {
-    console.clear();
-    console.log("\n|-----------------MENÚ PRINCIPAL-----------------|");
-    console.log(`
-    [1] Alta de productos
-    [2] Modificacion de productos
-    [3] Ver productos
-    [0] Salir
-    `);
-}
+    try {
+        const connection = await getConnection();
+        
+        // Insertar el nuevo producto en la base de datos
+        const query = "INSERT INTO productos (articulo, descripcion, cantidad) VALUES (?, ?, ?, ?)";
+        const [result] = await connection.execute(query, [articulo, descripcion, cantidad]);
 
-function alta() {
-    let id_prod = generarID();
+        connection.release(); // Liberar la conexión de vuelta al pool
 
-    rl.question('Ingrese el artículo: ', (art) => {
-        if (typeof art !== 'string' || art.trim() === '') {
-            console.log("El artículo debe ser un texto no vacío.");
-            seleccionarOpcion();
-            return;
-        }
+        console.log('Producto ingresado correctamente:', result);
 
-        rl.question('Ingrese la descripción: ', (des) => {
-            if (typeof des !== 'string' || des.trim() === '') {
-                console.log("La descripción debe ser un texto no vacío.");
-                seleccionarOpcion();
-                return;
-            }
+        res.status(200).json({ message: 'Producto ingresado correctamente' });
+    } catch (error) {
+        console.error('Error al ingresar el producto:', error);
+        res.status(500).json({ error: 'Error al ingresar el producto' });
+    }
+});
 
-            rl.question('Ingrese la cantidad en stock: ', (cant) => {
-                let cantidad = parseInt(cant.trim());
-                if (isNaN(cantidad) || cantidad < 0) {
-                    console.log("La cantidad en stock debe ser un número válido.");
-                    seleccionarOpcion();
-                    return;
-                }
+// Route to fetch clientes
+app.get('/clientes', async (req, res) => {
+    const query = 'SELECT * FROM clientes';
+    await handleQuery(req, res, query);
+});
 
-                rl.question('Ingrese el precio de venta: ', (precio) => {
-                    let precioVenta = parseFloat(precio.trim());
-                    if (isNaN(precioVenta) || precioVenta < 0) {
-                        console.log("El precio de venta debe ser un número válido.");
-                        seleccionarOpcion();
-                        return;
-                    }
+// Route to fetch sucursales
+app.get('/sucursales', async (req, res) => {
+    const query = 'SELECT * FROM sucursales';
+    await handleQuery(req, res, query);
+});
 
-                    let nuevoProducto = {
-                        id: id_prod,
-                        articulo: art.trim(),
-                        descripcion: des.trim(),
-                        cantidad_stock: cantidad,
-                        precio_venta: precioVenta
-                    };
+// Route to fetch ventas
+app.get('/ventas', async (req, res) => {
+    const query = 'SELECT * FROM ventas';
+    await handleQuery(req, res, query);
+});
 
-                    productos.producto.push(nuevoProducto);
-                    console.log("¡Producto agregado!");
-                    console.log(nuevoProducto);
-                    seleccionarOpcion();
-                });
-            });
-        });
-    });
-}
+// Route to fetch empleados
+app.get('/empleados', async (req, res) => {
+    const query = 'SELECT * FROM empleados';
+    await handleQuery(req, res, query);
+});
 
-function modificacion() {
-    mostrar();
-    rl.question('Ingrese el id del producto a modificar: ', (id) => {
-        id = parseInt(id) - 1;
-
-        if (id < 0 || id >= productos.producto.length || isNaN(id)) {
-            console.log("ID de producto no válido.");
-            seleccionarOpcion();
-            return;
-        }
-
-        rl.question('Ingrese el nuevo artículo: ', (art) => {
-            if (typeof art !== 'string' || art.trim() === '') {
-                console.log("El artículo debe ser un texto no vacío.");
-                seleccionarOpcion();
-                return;
-            }
-
-            rl.question('Ingrese la nueva descripción: ', (des) => {
-                if (typeof des !== 'string' || des.trim() === '') {
-                    console.log("La descripción debe ser un texto no vacío.");
-                    seleccionarOpcion();
-                    return;
-                }
-
-                rl.question('Ingrese la nueva cantidad en stock: ', (cant) => {
-                    let cantidad = parseInt(cant.trim());
-                    while (isNaN(cantidad) || cantidad < 0) {
-                        console.log("La cantidad en stock debe ser un número válido.");
-                        seleccionarOpcion();
-                        return;
-                    }
-
-                    rl.question('Ingrese el nuevo precio de venta: ', (precio) => {
-                        let precioVenta = parseFloat(precio.trim());
-                        if (isNaN(precioVenta) || precioVenta < 0) {
-                            console.log("El precio de venta debe ser un número válido.");
-                            
-                        }
-
-                        let productoModificado = {
-                            id: id + 1,
-                            articulo: art.trim(),
-                            descripcion: des.trim(),
-                            cantidad_stock: cantidad,
-                            precio_venta: precioVenta
-                        };
-
-                        productos.producto[id] = productoModificado;
-                        console.log("¡Producto modificado!");
-                        console.log(productoModificado);
-                        seleccionarOpcion();
-                    });
-                });
-            });
-        });
-    });
-}
-
-function mostrar() {
-    console.log("|-----|--------------------|--------------------------|-------------------|-----------------|");
-    console.log("| ID  |   Artículo         |   Descripción            | Cantidad en stock | Precio de venta |");
-    console.log("|-----|--------------------|--------------------------|-------------------|-----------------|");
-
-    productos.producto.forEach(producto => {
-        let id = producto.id.toString().padEnd(3, ' ');
-        let articulo = producto.articulo.padEnd(18, ' ');
-        let descripcion = producto.descripcion.padEnd(24, ' ');
-        let cantidad = producto.cantidad_stock.padEnd(17, ' ');
-        let precio = producto.precio_venta.padEnd(15, ' ');
-
-        console.log(`| ${id} | ${articulo} | ${descripcion} | ${cantidad} | ${precio} |`);
-        console.log("|-----|--------------------|--------------------------|-------------------|-----------------|");
-    });
-}
-
-function seleccionarOpcion() {
-    rl.question('Presione "Enter" para mostrar el menú principal: ', () => {
-        console.log("\n");
-        menuprincipal();
-        rl.question('Elija la opción deseada: ', (input) => {
-            let opcion = parseInt(input.trim());
-            
-            if (opcion < 0 || opcion > 3 || isNaN(opcion)) {
-                console.log("\n¡OPCIÓN INCORRECTA!");
-                seleccionarOpcion();
-            } else {
-                if (opcion === 1) {
-                    alta();
-                } else if (opcion === 2) {
-                    modificacion();
-                } else if (opcion === 3) {
-                    mostrar();
-                    seleccionarOpcion();
-                } else if (opcion === 0) {
-                    console.log("¡Hasta luego!");
-                    rl.close();
-                }
-            }
-        });
-    });
-}
-
-seleccionarOpcion();
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
