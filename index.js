@@ -33,7 +33,7 @@ async function handleQuery(req, res, query) {
         const [rows] = await connection.query(query);
 
         if (rows.length === 0) {
-            res.status(404).json({ error: 'No hay resultados encontrados.' });
+            res.json([]); // Enviar una tabla vacía
         } else {
             console.table(rows);
             res.json(rows);
@@ -59,7 +59,7 @@ app.post("/productos", async (req, res) => {
         const connection = await getConnection();
         
         // Insertar el nuevo producto en la base de datos
-        const query = "INSERT INTO productos (articulo, descripcion, cantidad) VALUES (?, ?, ?, ?)";
+        const query = "INSERT INTO productos (articulo, descripcion, cantidad) VALUES (?, ?, ?)";
         const [result] = await connection.execute(query, [articulo, descripcion, cantidad]);
 
         connection.release(); // Liberar la conexión de vuelta al pool
