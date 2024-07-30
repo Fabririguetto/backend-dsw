@@ -20,27 +20,31 @@ async function getConnection() {
     }
 }
 
-// Route to fetch productos with optional filtering by nombre
 router.get('/productos', async (req, res) => {
-    const { producto } = req.query;
+  const { producto } = req.query; // Obtener el parámetro "producto" desde la query
 
-    try {
-        const connection = await getConnection();
-        let query = `
-            SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto
-            FROM productos prod
-            LEFT JOIN precios pre ON prod.idProducto = pre.idProducto
-        `;
-        queryParams = [`%${producto}%`, `%${producto}%`];
+  try {
+      const connection = await getConnection();
+      let query = `
+          SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto
+          FROM productos prod
+          LEFT JOIN precios pre ON prod.idProducto = pre.idProducto
+      `;
+      let queryParams = [];
 
-        const [rows] = await connection.execute(query, queryParams);
-        connection.release();
+      if (producto) {
+          query += ' WHERE prod.articulo LIKE ? OR prod.descripcion LIKE ?';
+          queryParams = [`%${producto}%`, `%${producto}%`];
+      }
 
-        res.status(200).json(rows);
-    } catch (error) {
-        console.error('Error al obtener productos:', error);
-        res.status(500).json({ error: 'Error al obtener productos' });
-    }
+      const [rows] = await connection.execute(query, queryParams);
+      connection.release();
+
+      res.status(200).json(rows);
+  } catch (error) {
+      console.error('Error al obtener productos:', error);
+      res.status(500).json({ error: 'Error al obtener productos' });
+  }
 });
 
 router.post("/productos", async (req, res) => {
@@ -93,6 +97,58 @@ router.post("/productos", async (req, res) => {
             connection.release();
         }
     }
+});
+
+router.put('/productos/:id', async (req, res) => {
+  const idProducto = req.params.id;
+  const { articulo, descripcion, cantidad, monto } = req.body;
+
+  if (!articulo || !descripcion || cantidad === undefined || monto === undefined) {
+      return res.status(400).json({ error: 'Faltan datos necesarios para actualizar el producto' });
+  }
+
+  let connection;
+
+  try {
+      connection = await getConnection();
+      await connection.beginTransaction(); // Iniciar la transacción
+
+      // Actualizar el producto en la base de datos usando parámetros
+      const query1 = 'UPDATE productos SET articulo = ?, descripcion = ?, cantidad = ? WHERE idProducto = ?';
+      await connection.execute(query1, [articulo, descripcion, cantidad, idProducto]);
+
+      // Insertar un nuevo precio para el producto
+      const fechaHora = new Date(); // Obtener la fecha y hora actual
+      const query2 = 'INSERT INTO precios (idProducto, fechaHora, monto) VALUES (?, ?, ?)';
+      await connection.execute(query2, [idProducto, fechaHora, monto]);
+
+      // Consulta para obtener el producto actualizado con su precio más reciente
+      const query3 = `
+          SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, 
+                 pre.monto
+          FROM productos prod
+          LEFT JOIN precios pre ON prod.idProducto = pre.idProducto
+          WHERE prod.idProducto = ?
+          ORDER BY pre.fechaHora DESC
+          LIMIT 1
+      `;
+      const [rows] = await connection.execute(query3, [idProducto]);
+
+      await connection.commit(); // Confirmar la transacción
+      res.status(200).json(rows[0]); // Enviar el producto actualizado con el precio más reciente
+  } catch (error) {
+      console.error('Error al actualizar el producto:', error);
+
+      if (connection) {
+          await connection.rollback();
+      }
+
+      res.status(500).json({ error: 'Error al actualizar el producto' });
+  } finally {
+      if (connection) {
+          connection.release();
+      }
+  }
 });
 
 module.exports = router;

@@ -9,7 +9,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Importar las rutas desde los archivos de rutas
-const productosRoutes = require('./routes/productos');
+const productosRoutes = require('./routes/stock');
 const clientesRoutes = require('./routes/clientes');
 const sucursalesRoutes = require('./routes/sucursales');
 const ventasRoutes = require('./routes/ventas');
