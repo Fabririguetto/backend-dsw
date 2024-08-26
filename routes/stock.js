@@ -20,34 +20,44 @@ async function getConnection() {
     }
 }
 
-router.get('/productos', async (req, res) => {
-  const { producto } = req.query; // Obtener el parámetro "producto" desde la query
+router.get('/stock', async (req, res) => {
+    const { producto, estado } = req.query;
 
-  try {
-      const connection = await getConnection();
-      let query = `
-          SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto
-          FROM productos prod
-          LEFT JOIN precios pre ON prod.idProducto = pre.idProducto
-      `;
-      let queryParams = [];
+    try {
+        const connection = await getConnection();
+        let query = `
+            SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto
+            FROM productos prod
+            INNER JOIN precios pre ON prod.idProducto = pre.idProducto
+            WHERE prod.estado = ? AND pre.fechaHora = (
+                SELECT MAX(fechaHora) 
+                FROM precios 
+                WHERE idProducto = prod.idProducto
+            )
+        `;
 
-      if (producto) {
-          query += ' WHERE prod.articulo LIKE ? OR prod.descripcion LIKE ?';
-          queryParams = [`%${producto}%`, `%${producto}%`];
-      }
+        // Define queryParams con un valor predeterminado para estado si es undefined
+        let queryParams = [estado || 'Alta'];
 
-      const [rows] = await connection.execute(query, queryParams);
-      connection.release();
+        if (producto) {
+            query += ' AND (prod.articulo LIKE ? OR prod.descripcion LIKE ?)';
+            queryParams.push(`%${producto}%`, `%${producto}%`);
+        }
 
-      res.status(200).json(rows);
-  } catch (error) {
-      console.error('Error al obtener productos:', error);
-      res.status(500).json({ error: 'Error al obtener productos' });
-  }
+        // Verifica y reemplaza valores undefined con null si es necesario
+        queryParams = queryParams.map(param => (param === undefined ? null : param));
+
+        const [rows] = await connection.execute(query, queryParams);
+        connection.release();
+
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error al obtener productos:', error);
+        res.status(500).json({ error: 'Error al obtener productos' });
+    }
 });
 
-router.post("/productos", async (req, res) => {
+router.post("/stock", async (req, res) => {
     const { articulo, descripcion, cantidad, monto } = req.body;
 
     if (!articulo || !descripcion || cantidad === undefined || monto === undefined) {
@@ -58,32 +68,31 @@ router.post("/productos", async (req, res) => {
 
     try {
         connection = await getConnection();
-        await connection.beginTransaction(); // Iniciar la transacción
+        await connection.beginTransaction();
 
-        // Insertar el nuevo producto en la base de datos usando parámetros
         const query1 = 'INSERT INTO productos (articulo, descripcion, cantidad) VALUES (?, ?, ?)';
         const [result1] = await connection.execute(query1, [articulo, descripcion, cantidad]);
 
-        // Obtener el id del producto insertado
         const idProducto = result1.insertId;
 
-        // Insertar el precio para el producto insertado usando parámetros
-        const fechaHora = new Date(); // Obtener la fecha y hora actual
+        const fechaHora = new Date();
         const query2 = 'INSERT INTO precios (idProducto, fechaHora, monto) VALUES (?, ?, ?)';
         await connection.execute(query2, [idProducto, fechaHora, monto]);
 
-        // Consulta para obtener el producto con su precio
         const query3 = `
-            SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, 
-                   pre.monto
+            SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto, prod.estado
             FROM productos prod
-            LEFT JOIN precios pre ON prod.idProducto = pre.idProducto
-            WHERE prod.idProducto = ?
+            INNER JOIN precios pre ON prod.idProducto = pre.idProducto
+            WHERE prod.idProducto = ? AND pre.fechaHora = (
+                SELECT MAX(fechaHora) 
+                FROM precios 
+                WHERE idProducto = prod.idProducto
+            )
         `;
         const [rows] = await connection.execute(query3, [idProducto]);
 
-        await connection.commit(); // Confirmar la transacción
-        res.status(200).json(rows[0]); // Enviar el producto insertado
+        await connection.commit();
+        res.status(200).json(rows[0]);
     } catch (error) {
         console.error('Error al ingresar el producto:', error);
 
@@ -99,56 +108,97 @@ router.post("/productos", async (req, res) => {
     }
 });
 
-router.put('/productos/:id', async (req, res) => {
-  const idProducto = req.params.id;
-  const { articulo, descripcion, cantidad, monto } = req.body;
+router.put('/stock/:id', async (req, res) => {
+    const idProducto = req.params.id;
+    const { articulo, descripcion, cantidad, monto } = req.body;
 
-  if (!articulo || !descripcion || cantidad === undefined || monto === undefined) {
-      return res.status(400).json({ error: 'Faltan datos necesarios para actualizar el producto' });
-  }
+    if (!articulo || !descripcion || cantidad === undefined || monto === undefined) {
+        return res.status(400).json({ error: 'Faltan datos necesarios para actualizar el producto' });
+    }
 
-  let connection;
+    let connection;
 
-  try {
-      connection = await getConnection();
-      await connection.beginTransaction(); // Iniciar la transacción
+    try {
+        connection = await getConnection();
+        await connection.beginTransaction();
 
-      // Actualizar el producto en la base de datos usando parámetros
-      const query1 = 'UPDATE productos SET articulo = ?, descripcion = ?, cantidad = ? WHERE idProducto = ?';
-      await connection.execute(query1, [articulo, descripcion, cantidad, idProducto]);
+        const query1 = 'UPDATE productos SET articulo = ?, descripcion = ?, cantidad = ? WHERE idProducto = ?';
+        await connection.execute(query1, [articulo, descripcion, cantidad, idProducto]);
 
-      // Insertar un nuevo precio para el producto
-      const fechaHora = new Date(); // Obtener la fecha y hora actual
-      const query2 = 'INSERT INTO precios (idProducto, fechaHora, monto) VALUES (?, ?, ?)';
-      await connection.execute(query2, [idProducto, fechaHora, monto]);
+        const fechaHora = new Date();
+        const query2 = 'INSERT INTO precios (idProducto, fechaHora, monto) VALUES (?, ?, ?)';
+        await connection.execute(query2, [idProducto, fechaHora, monto]);
 
-      // Consulta para obtener el producto actualizado con su precio más reciente
-      const query3 = `
-          SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, 
-                 pre.monto
-          FROM productos prod
-          LEFT JOIN precios pre ON prod.idProducto = pre.idProducto
-          WHERE prod.idProducto = ?
-          ORDER BY pre.fechaHora DESC
-          LIMIT 1
-      `;
-      const [rows] = await connection.execute(query3, [idProducto]);
+        const query3 = `
+            SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto, prod.estado
+            FROM productos prod
+            INNER JOIN precios pre ON prod.idProducto = pre.idProducto
+            WHERE prod.idProducto = ? AND pre.fechaHora = (
+                SELECT MAX(fechaHora) 
+                FROM precios 
+                WHERE idProducto = prod.idProducto
+            )
+        `;
+        const [rows] = await connection.execute(query3, [idProducto]);
 
-      await connection.commit(); // Confirmar la transacción
-      res.status(200).json(rows[0]); // Enviar el producto actualizado con el precio más reciente
-  } catch (error) {
-      console.error('Error al actualizar el producto:', error);
+        await connection.commit();
+        res.status(200).json(rows[0]);
+    } catch (error) {
+        console.error('Error al actualizar el producto:', error);
 
-      if (connection) {
-          await connection.rollback();
-      }
+        if (connection) {
+            await connection.rollback();
+        }
 
-      res.status(500).json({ error: 'Error al actualizar el producto' });
-  } finally {
-      if (connection) {
-          connection.release();
-      }
-  }
+        res.status(500).json({ error: 'Error al actualizar el producto' });
+    } finally {
+        if (connection) {
+            connection.release();
+        }
+    }
+});
+
+router.put('/stockelim/:id', async (req, res) => {
+    const idProducto = req.params.id;
+    const { estado } = req.body;
+
+    let connection;
+
+    try {
+        connection = await getConnection();
+        await connection.beginTransaction();
+
+        const nuevoEstado = estado === 'Alta' ? 'Baja' : 'Alta';
+        const query1 = 'UPDATE productos SET estado = ? WHERE idProducto = ?';
+        await connection.execute(query1, [nuevoEstado, idProducto]);
+
+        const query3 = `
+            SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto, prod.estado
+            FROM productos prod
+            INNER JOIN precios pre ON prod.idProducto = pre.idProducto
+            WHERE prod.idProducto = ? AND pre.fechaHora = (
+                SELECT MAX(fechaHora) 
+                FROM precios 
+                WHERE idProducto = prod.idProducto
+            )
+        `;
+        const [rows] = await connection.execute(query3, [idProducto]);
+
+        await connection.commit();
+        res.status(200).json(rows[0]);
+    } catch (error) {
+        console.error('Error al actualizar el estado del producto:', error);
+
+        if (connection) {
+            await connection.rollback();
+        }
+
+        res.status(500).json({ error: 'Error al actualizar el estado del producto' });
+    } finally {
+        if (connection) {
+            connection.release();
+        }
+    }
 });
 
 module.exports = router;
