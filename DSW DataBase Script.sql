@@ -4,7 +4,9 @@ CREATE TABLE productos (
 idProducto int not null primary key AUTO_INCREMENT,
 articulo varchar(50),
 descripcion varchar(50), 
-cantidad int);
+cantidad int,
+estado varchar(50)
+);
 
 CREATE TABLE clientes (
 idCliente int not null primary key AUTO_INCREMENT,

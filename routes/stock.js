@@ -70,7 +70,7 @@ router.post("/stock", async (req, res) => {
         connection = await getConnection();
         await connection.beginTransaction();
 
-        const query1 = 'INSERT INTO productos (articulo, descripcion, cantidad) VALUES (?, ?, ?)';
+        const query1 = 'INSERT INTO productos (articulo, descripcion, cantidad, estado) VALUES (?, ?, ?, Alta)';
         const [result1] = await connection.execute(query1, [articulo, descripcion, cantidad]);
 
         const idProducto = result1.insertId;
