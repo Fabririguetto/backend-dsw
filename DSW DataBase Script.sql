@@ -35,6 +35,7 @@ idVenta int not null primary key AUTO_INCREMENT,
 montoTotal decimal (18,2),
 idSucursal int,
 idCliente int,
+fechaHoraVenta int not null,
 foreign key (idSucursal) references sucursales (idSucursal),
 foreign key (idCliente) references clientes (idCliente)
 );
@@ -50,10 +51,9 @@ foreign key (idProducto) references productos (idProducto)
 CREATE TABLE productoVenta (
 idProducto int not null,
 idVenta int not null,
-fechaHoraVenta int not null,
 cantidadVendida int not null,
 subtotal decimal (18,2),
-PRIMARY KEY (idProducto, fechaHoraVenta, idVenta),
+PRIMARY KEY (idProducto, idVenta),
 foreign key (idProducto) references productos (idProducto),
 foreign key (idventa) references ventas (idVenta)
 );
