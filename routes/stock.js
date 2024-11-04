@@ -32,8 +32,7 @@ router.get('/stock', async (req, res) => {
             WHERE prod.estado = ? AND pre.fechaHora = (
                 SELECT MAX(fechaHora) 
                 FROM precios 
-                WHERE idProducto = prod.idProducto
-            )
+                WHERE idProducto = prod.idProducto)
         `;
 
         // Define queryParams con un valor predeterminado para estado si es undefined
@@ -69,27 +68,15 @@ router.post("/stock", async (req, res) => {
     try {
         connection = await getConnection();
         await connection.beginTransaction();
-
-        const query1 = 'INSERT INTO productos (articulo, descripcion, cantidad, estado) VALUES (?, ?, ?, Alta)';
-        const [result1] = await connection.execute(query1, [articulo, descripcion, cantidad]);
+        const estado = 'Alta';
+        const query1 = 'INSERT INTO productos (articulo, descripcion, cantidad, estado) VALUES (?, ?, ?, ?)';
+        const [result1] = await connection.execute(query1, [articulo, descripcion, cantidad, estado]);
 
         const idProducto = result1.insertId;
 
         const fechaHora = new Date();
         const query2 = 'INSERT INTO precios (idProducto, fechaHora, monto) VALUES (?, ?, ?)';
         await connection.execute(query2, [idProducto, fechaHora, monto]);
-
-        const query3 = `
-            SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto, prod.estado
-            FROM productos prod
-            INNER JOIN precios pre ON prod.idProducto = pre.idProducto
-            WHERE prod.idProducto = ? AND pre.fechaHora = (
-                SELECT MAX(fechaHora) 
-                FROM precios 
-                WHERE idProducto = prod.idProducto
-            )
-        `;
-        const [rows] = await connection.execute(query3, [idProducto]);
 
         await connection.commit();
         res.status(200).json(rows[0]);
@@ -129,18 +116,6 @@ router.put('/stock/:id', async (req, res) => {
         const query2 = 'INSERT INTO precios (idProducto, fechaHora, monto) VALUES (?, ?, ?)';
         await connection.execute(query2, [idProducto, fechaHora, monto]);
 
-        const query3 = `
-            SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto, prod.estado
-            FROM productos prod
-            INNER JOIN precios pre ON prod.idProducto = pre.idProducto
-            WHERE prod.idProducto = ? AND pre.fechaHora = (
-                SELECT MAX(fechaHora) 
-                FROM precios 
-                WHERE idProducto = prod.idProducto
-            )
-        `;
-        const [rows] = await connection.execute(query3, [idProducto]);
-
         await connection.commit();
         res.status(200).json(rows[0]);
     } catch (error) {
@@ -171,18 +146,6 @@ router.put('/stockelim/:id', async (req, res) => {
         const nuevoEstado = estado === 'Alta' ? 'Baja' : 'Alta';
         const query1 = 'UPDATE productos SET estado = ? WHERE idProducto = ?';
         await connection.execute(query1, [nuevoEstado, idProducto]);
-
-        const query3 = `
-            SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto, prod.estado
-            FROM productos prod
-            INNER JOIN precios pre ON prod.idProducto = pre.idProducto
-            WHERE prod.idProducto = ? AND pre.fechaHora = (
-                SELECT MAX(fechaHora) 
-                FROM precios 
-                WHERE idProducto = prod.idProducto
-            )
-        `;
-        const [rows] = await connection.execute(query3, [idProducto]);
 
         await connection.commit();
         res.status(200).json(rows[0]);

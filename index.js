@@ -20,7 +20,7 @@ app.use(productosRoutes);
 app.use(clientesRoutes);
 app.use(sucursalesRoutes);
 app.use(ventasRoutes);
-app.use(empleadosRoutes);
+/*app.use(empleadosRoutes);*/
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
