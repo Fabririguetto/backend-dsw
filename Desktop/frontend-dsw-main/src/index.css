@@ -1,0 +1,224 @@
+/* Estilo básico para el cuerpo */
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  background-color: #f5f7fa;
+  color: #333;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease; /* Transición suave de color de fondo */
+  height: 100%; /* Asegura que el cuerpo ocupe toda la altura */
+}
+
+/* Contenedor principal */
+#root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Cambiado a flex-start para mejorar la distribución en móviles */
+  min-height: 100vh;
+  width: 100%; /* Asegura que ocupe todo el ancho */
+  box-sizing: border-box;
+  padding-left: 2px;
+  padding-right: 2px;
+}
+
+/* Contenedor de la aplicación */
+.App {
+  background-color: #fff;
+  color: #000;
+  width: 100%; /* Asegura que ocupe todo el ancho */
+  height: 100%; /* Hace que ocupe toda la altura disponible */
+  margin: 0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  transition: box-shadow 0.3s ease;
+}
+
+.App:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); /* Sombra al pasar el mouse */
+}
+
+/* Encabezado */
+.App-header {
+  background-color: #1e1e2f;
+  color: white;
+  padding: px;
+  text-align: center;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Asegura que el encabezado ocupe todo el ancho */
+}
+
+/* Estilo para enlaces de navegación */
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+nav a {
+  color: #61dafb;
+  text-decoration: none;
+  font-size: 1.1em;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+nav a:hover {
+  color: #21a1f1;
+}
+
+/* Botones y enlaces */
+button, .card-button {
+  background-color: #1e1e2f;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover, .card-button:hover {
+  background-color: #61dafb;
+}
+
+button:focus, .card-button:focus {
+  outline: none;
+  box-shadow: 0 0 5px #61dafb;
+}
+
+/* Contenedor de tarjetas */
+.card-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+  padding: 20px;
+  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+}
+
+/* Estilo de las tarjetas */
+.card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Ocupa el 100% del ancho disponible */
+  max-width: 250px; /* Límite para que no se estiren demasiado */
+  padding: 16px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.card-text {
+  font-size: 1em;
+  margin-bottom: 12px;
+  color: #555;
+}
+
+.card-button-container {
+  display: flex;
+  justify-content: center;
+}
+
+/* Formulario y entradas */
+input, select {
+  width: 100%; /* Asegura que ocupen todo el ancho disponible */
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus, select:focus {
+  border-color: #61dafb;
+  box-shadow: 0 0 5px #61dafb;
+}
+
+/* Sombra de contenedor de formularios */
+.form-container {
+  width: 100%;
+  background-color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  /* Diseño para móviles: las tarjetas ocupan el ancho completo */
+  .card-container {
+    gap: 12px;
+  }
+
+  .card {
+    width: 100%; /* En móviles, las tarjetas ocupan todo el ancho */
+    max-width: 100%; /* Sin límite de tamaño */
+    padding: 14px;
+  }
+
+  .card-title {
+    font-size: 1.1em;
+  }
+
+  .card-text {
+    font-size: 0.9em;
+  }
+
+  .card-button {
+    font-size: 1.1em;
+  }
+
+  /* Ajustes en formularios */
+  input, select {
+    padding: 14px;
+    font-size: 1.1em;
+  }
+}
+
+@media (min-width: 768px) {
+  /* En pantallas medianas, como tabletas */
+  .App {
+    max-width: 80%; /* La aplicación se adapta al 80% del ancho */
+  }
+
+  .card-container {
+    gap: 20px;
+  }
+
+  .card {
+    width: 250px;
+  }
+}
+
+@media (min-width: 1200px) {
+  /* En pantallas grandes, como PCs de escritorio */
+  .App {
+    max-width: 100%; /* La aplicación ocupa todo el ancho */
+    margin: 0;
+  }
+
+  .card-container {
+    gap: 30px;
+  }
+
+  .card {
+    width: 300px; /* Ajuste del tamaño de las tarjetas en pantallas grandes */
+  }
+}
