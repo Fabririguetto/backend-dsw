@@ -26,15 +26,13 @@ router.get('/empleados', async (req, res) => {
 
     try {
         const connection = await getConnection();
-        let query = 'SELECT * FROM empleados';
+        let query = 'SELECT emp.DNI_CUIL, emp.nombre_apellidoEmp, emp.contacto, suc.nombreSucursal, suc.idSucursal FROM empleados emp INNER JOIN sucursales suc ON emp.idSucursal = suc.idSucursal';
         let queryParams = [];
 
         if (nombre) {
             query += ' WHERE (DNI_CUIL LIKE ? OR nombre_apellidoEmp LIKE ?)';
             queryParams.push(`%${nombre}%`, `%${nombre}%`);
         }
-
-        queryParams = queryParams.map(param => (param === undefined ? null : param));
 
         const [rows] = await connection.execute(query, queryParams);
         connection.release();
@@ -60,12 +58,13 @@ router.post("/empleados", async (req, res) => {
         connection = await getConnection();
         await connection.beginTransaction();
 
-        // Inserción del empleado
         const query1 = 'INSERT INTO empleados (DNI_CUIL, nombre_apellidoEmp, contacto, idSucursal) VALUES (?, ?, ?, ?)';
-        const [result1] = await connection.execute(query1, [dni, nombre_apellidoEmp, contacto, sucursal]);
+        //const [result1] = await connection.execute(query1, [dni, nombre_apellidoEmp, contacto, sucursal]);
+        await connection.execute(query1, [dni, nombre_apellidoEmp, contacto, sucursal]);
+
 
         await connection.commit();
-        res.status(200).json(rows[0]); // Respuesta exitosa con los datos del empleado
+        res.status(200).json(rows[0]);
     } catch (error) {
         console.error('Error al ingresar el empleado:', error);
 
@@ -80,10 +79,11 @@ router.post("/empleados", async (req, res) => {
         }
     }
 });
+
 // Ruta para actualizar un empleado
 router.put('/empleados/:id', async (req, res) => {
     const idEmpleado = req.params.id;
-    const { dni, nombre_apellidoEmp, direccion, contacto } = req.body;
+    const { dni, nombre_apellidoEmp, contacto } = req.body;
 
     if (!dni || !nombre_apellidoEmp || !contacto) {
         return res.status(400).json({ error: 'Faltan datos necesarios para actualizar el empleado' });
@@ -96,7 +96,7 @@ router.put('/empleados/:id', async (req, res) => {
         await connection.beginTransaction();
 
         const query1 = 'UPDATE empleados SET nombre_apellidoEmp = ?, contacto = ? WHERE DNI_CUIL = ?';
-        await connection.execute(query1, [dni, nombre_apellidoEmp, direccion, contacto, idEmpleado]);
+        await connection.execute(query1, [nombre_apellidoEmp, contacto, dni]);
 
         await connection.commit();
         res.status(200).json(rows[0]);
@@ -115,3 +115,4 @@ router.put('/empleados/:id', async (req, res) => {
     }
 });
 
+module.exports = router;
