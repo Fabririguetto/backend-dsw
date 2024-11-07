@@ -34,6 +34,26 @@ router.get('/ventas', async (req, res) => {
     }
 });
 
+router.get('/detalle_ventas/:idVenta', async (req, res) => {
+    const { idVenta } = req.params; // Captura el parámetro idVenta de la URL
+    const query = 'SELECT dven.idVenta, sto.articulo, sto.descripcion, dven.cantidadVendida, dven.subtotal  FROM productoventa dven INNER JOIN productos sto ON dven.idProducto = sto.idProducto WHERE dven.idVenta = ?'; // Filtro por idVenta
+    
+    try {
+        const connection = await getConnection();
+        const [rows] = await connection.query(query, [idVenta]); // Pasa el idVenta como parámetro a la consulta
+        connection.release();
+        
+        if (rows.length === 0) {
+            res.status(404).json({ message: 'No se encontraron detalles para esta venta.' });
+        } else {
+            res.json(rows); // Retorna los resultados si existen
+        }
+    } catch (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error en la consulta.' });
+    }
+});
+
 // Route to create a new venta
 router.post('/crearVenta', async (req, res) => {
     const { montoTotal, DNIEmpleado, idCliente, fechaHoraVenta } = req.body;

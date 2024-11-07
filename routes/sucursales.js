@@ -20,14 +20,28 @@ async function getConnection() {
     }
 }
 
-// Route to fetch sucursales
 router.get('/sucursales', async (req, res) => {
-    const query = 'SELECT * FROM sucursales';
+    const { filtro } = req.query;  // Recibiendo el filtro único
+
+    let query = 'SELECT * FROM sucursales WHERE 1=1';  // Siempre devuelve algo (1=1 es una condición siempre verdadera)
+
+    // Condicionalmente agregamos el filtro a la consulta
+    if (filtro) {
+        query += ` AND (nombreSucursal LIKE ? OR direccion LIKE ?)`;
+    }
+
     try {
         const connection = await getConnection();
-        const [rows] = await connection.query(query);
-        connection.release();
-        res.json(rows);
+
+        const params = [];
+        if (filtro) {
+            params.push(`%${filtro}%`);
+            params.push(`%${filtro}%`);
+        }
+
+        const [rows] = await connection.query(query, params);
+        connection.release();  // Release the connection back to the pool
+        res.json(rows);  // Return the query result (rows)
     } catch (error) {
         console.error('Error executing query:', error);
         res.status(500).json({ error: 'Error en la consulta.' });
