@@ -47,6 +47,21 @@ router.get('/clientes', async (req, res) => {
     }
 });
 
+// Ruta para obtener la lista de clientes
+router.get('/clientesventa', async (req, res) => {
+    const query = 'SELECT id_cliente, nombre FROM clientes';  // Suponiendo que tienes los campos 'id_cliente' y 'nombre'
+    try {
+        const connection = await getConnection();
+        const [rows] = await connection.query(query);
+        connection.release();
+        res.json(rows);  // Devolvemos la lista de clientes
+    } catch (error) {
+        console.error('Error al obtener clientes:', error);
+        res.status(500).json({ error: 'Error al obtener clientes.' });
+    }
+});
+
+
 // Ruta para agregar un cliente
 router.post("/clientes", async (req, res) => {
     const { dni, nombre_apellidoCli, direccion, contacto } = req.body;

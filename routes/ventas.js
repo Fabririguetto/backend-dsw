@@ -22,7 +22,7 @@ async function getConnection() {
 
 // Route to fetch ventas
 router.get('/ventas', async (req, res) => {
-    const query = 'SELECT * FROM ventas';
+    const query = 'SELECT ven.idVenta, ven.montoTotal, emp.nombre_apellidoEmp, cli.nombre_apellidoCli  FROM ventas ven INNER JOIN empleados emp ON ven.DNIEmpleado = emp.DNI_CUIL INNER JOIN clientes cli ON ven.idCliente = cli.idCliente';
     try {
         const connection = await getConnection();
         const [rows] = await connection.query(query);
@@ -31,6 +31,30 @@ router.get('/ventas', async (req, res) => {
     } catch (error) {
         console.error('Error executing query:', error);
         res.status(500).json({ error: 'Error en la consulta.' });
+    }
+});
+
+// Route to create a new venta
+router.post('/crearVenta', async (req, res) => {
+    const { montoTotal, DNIEmpleado, idCliente, fechaHoraVenta } = req.body;
+
+    // Validación de campos
+    if (!montoTotal || !DNIEmpleado || !idCliente || !fechaHoraVenta) {
+        return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+    }
+
+    const query = 'INSERT INTO ventas (montoTotal, DNIEmpleado, idCliente, fechaHoraVenta) VALUES (?, ?, ?, ?)';
+    try {
+        const connection = await getConnection();
+        const [result] = await connection.query(query, [montoTotal, DNIEmpleado, idCliente, fechaHoraVenta]);
+
+        const newVentaId = result.insertId;
+        connection.release();
+
+        res.json({ id_venta: newVentaId });
+    } catch (error) {
+        console.error('Error al crear la venta:', error);
+        res.status(500).json({ error: 'Error al crear la venta.' });
     }
 });
 
