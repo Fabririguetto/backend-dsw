@@ -1,14 +1,10 @@
-/* stock.css */
-
-/* General styles */
+/* Estilo general */
 body {
   font-family: 'Roboto', sans-serif;
   background-color: #f4f4f9;
-  color: #e00000;
+  color: #333;
   margin: 0;
   padding: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.3s ease;
   height: 100%;
 }
@@ -19,93 +15,57 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-height: 100 vh;
+  min-height: 100vh;
   width: 100%;
   box-sizing: border-box;
-  padding-left: 2px;
-  padding-right: 2px;
+  padding: 0 2px;
 }
 
-/* Formulario */
+/* Formularios */
 form {
   display: flex;
-  flex-wrap: wrap; /* Permite que los elementos se ajusten al contenedor */
+  flex-wrap: wrap;
   gap: 10px;
-  width: 100%; /* Ocupar todo el ancho */
+  width: 100%;
   margin: 20px 0;
-  background-color: #000;
+  background-color: #fff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
 }
 
-/* Entradas de texto y número */
 input[type="text"],
 input[type="number"] {
   padding: 10px;
-  flex: 1; /* Permite que los inputs ocupen todo el espacio disponible */
-  min-width: 150px; /* Establece un ancho mínimo para que no se hagan demasiado pequeños */
+  flex: 1;
+  min-width: 150px;
   border: 1px solid #ddd;
   border-radius: 5px;
   transition: border 0.3s, box-shadow 0.3s;
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus {
+input:focus {
   border-color: #61dafb;
   box-shadow: 0 0 5px #61dafb;
-  outline: none;
 }
 
-/* Botones */
 button {
-  background-color: #3bc11a;
+  background-color: #4a90e2;
   color: white;
   border: none;
   padding: 10px;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
-  flex: 1; /* Hace que el botón ocupe el espacio disponible */
+  flex: 1;
   min-width: 150px;
 }
 
 button:hover {
-  background-color: #61dafb;
+  background-color: #357ab8;
 }
 
-button[type="button"] {
-  background-color: #d9534f;
-}
-
-button[type="button"]:hover {
-  background-color: #c9302c;
-}
-
-/* Card Button */
-.card-button {
-  background-color: #1f2f1e;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  flex: 1; /* Ocupa todo el ancho */
-  min-width: 150px;
-}
-
-.card-button:hover {
-  background-color: #61dafb;
-}
-
-.card-button:focus {
-  outline: none;
-  box-shadow: 0 0 5px #61dafb;
-}
-
-/* Table styles */
+/* Tablas */
 table {
   width: 90%;
   margin: 20px auto;
@@ -139,107 +99,31 @@ tbody tr:hover {
   background-color: #f1f1f1;
 }
 
-/* Filter section styling */
-.filters input[type="text"] {
-  margin-top: 10px;
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
+/* Botones Editar y Eliminar */
+.btn-edit {
+  background-color: #4caf50; /* Verde para Editar */
+  color: white;
+  border: none;
+  padding: 8px 15px;
   border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-/* Card container */
-.card-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center;
-  padding: 20px;
-  width: 100%;
+.btn-edit:hover {
+  background-color: #388e3c; /* Verde más oscuro */
 }
 
-/* Estilo de las tarjetas */
-.card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 250px;
-  padding: 16px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+.btn-delete {
+  background-color: #f44336; /* Rojo para Eliminar */
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-}
-
-.card-title {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 8px;
-  text-align: center;
-}
-
-.card-text {
-  font-size: 1em;
-  margin-bottom: 12px;
-  color: #555;
-}
-
-.card-button-container {
-  display: flex;
-  justify-content: center;
-}
-
-/* Media Queries */
-@media (max-width: 768px) {
-  .card-container {
-    gap: 12px;
-  }
-
-  .card {
-    width: 100%;
-    max-width: 100%;
-    padding: 14px;
-  }
-
-  .card-title {
-    font-size: 1.1em;
-  }
-
-  .card-text {
-    font-size: 0.9em;
-  }
-
-  .card-button {
-    font-size: 1.1em;
-  }
-
-  /* Ajustes en formularios */
-  input, select {
-    padding: 14px;
-    font-size: 1.1em;
-  }
-}
-
-@media (min-width: 768px) {
-  .card-container {
-    gap: 20px;
-  }
-
-  .card {
-    width: 250px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .card-container {
-    gap: 30px;
-  }
-
-  .card {
-    width: 300px;
-  }
+.btn-delete:hover {
+  background-color: #d32f2f; /* Rojo más oscuro */
 }

@@ -1,20 +1,20 @@
 import React from 'react';
 import useStock from '../../hooks/useHookStock';
-import './stock.css'; 
+import './stock.css';
 
-function FormStock (){
-const {
-  sortedProductos,
-  formData,
-  filters,
-  handleInputChange,
-  handleFilterChange,
-  handleSubmit,
-  handleEdit,
-  handleElim,
-  requestSort,
-  resetForm,
-} = useStock();
+function FormStock() {
+  const {
+    sortedProductos,
+    formData,
+    filters,
+    handleInputChange,
+    handleFilterChange,
+    handleSubmit,
+    handleEdit,
+    handleElim,
+    requestSort,
+    resetForm,
+  } = useStock();
 
   return (
     <div>
@@ -47,10 +47,10 @@ const {
           onChange={handleInputChange}
           placeholder="Monto"
         />
-        <button type="submit">
+        <button type="submit" className="btn-submit">
           {formData.idProducto ? 'Actualizar Producto' : 'Agregar Producto'}
         </button>
-        <button type="button" onClick={resetForm}>
+        <button type="button" className="btn-reset" onClick={resetForm}>
           Limpiar Formulario
         </button>
       </form>
@@ -90,8 +90,20 @@ const {
               <td>{producto.cantidad}</td>
               <td>{producto.monto}</td>
               <td>
-                <button onClick={() => handleEdit(producto)}>Editar</button>
-                <button onClick={() => handleElim(producto.idProducto, producto.estado)}>Eliminar</button>
+                <button
+                  id={`edit-${producto.idProducto}`} /* ID único para Editar */
+                  className="btn-edit"
+                  onClick={() => handleEdit(producto)}
+                >
+                  Editar
+                </button>
+                <button
+                  id={`delete-${producto.idProducto}`} /* ID único para Eliminar */
+                  className="btn-delete"
+                  onClick={() => handleElim(producto.idProducto, producto.estado)}
+                >
+                  Eliminar
+                </button>
               </td>
             </tr>
           ))}
@@ -99,6 +111,6 @@ const {
       </table>
     </div>
   );
-};
+}
 
 export default FormStock;

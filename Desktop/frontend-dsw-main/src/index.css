@@ -6,8 +6,8 @@ body {
   color: #333;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.3s ease; /* Transición suave de color de fondo */
-  height: 100%; /* Asegura que el cuerpo ocupe toda la altura */
+  transition: background-color 0.3s ease;
+  height: 100%;
 }
 
 /* Contenedor principal */
@@ -15,42 +15,40 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* Cambiado a flex-start para mejorar la distribución en móviles */
+  justify-content: flex-start;
   min-height: 100vh;
-  width: 100%; /* Asegura que ocupe todo el ancho */
+  width: 100%;
   box-sizing: border-box;
-  padding-left: 2px;
-  padding-right: 2px;
+  padding: 0 2px;
 }
 
 /* Contenedor de la aplicación */
 .App {
   background-color: #fff;
   color: #000;
-  width: 100%; /* Asegura que ocupe todo el ancho */
-  height: 100%; /* Hace que ocupe toda la altura disponible */
+  width: 100%;
   margin: 0;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Sombra sutil */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease;
 }
 
 .App:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); /* Sombra al pasar el mouse */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* Encabezado */
 .App-header {
   background-color: #1e1e2f;
   color: white;
-  padding: px;
+  padding: 16px;
   text-align: center;
   border-radius: 8px 8px 0 0;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 100%; /* Asegura que el encabezado ocupe todo el ancho */
+  width: 100%;
 }
 
-/* Estilo para enlaces de navegación */
+/* Navegación */
 nav {
   display: flex;
   justify-content: center;
@@ -70,7 +68,7 @@ nav a:hover {
   color: #21a1f1;
 }
 
-/* Botones y enlaces */
+/* Botones */
 button, .card-button {
   background-color: #1e1e2f;
   color: #fff;
@@ -97,16 +95,15 @@ button:focus, .card-button:focus {
   gap: 16px;
   justify-content: center;
   padding: 20px;
-  width: 100%; /* Asegura que ocupe todo el ancho disponible */
+  width: 100%;
 }
 
-/* Estilo de las tarjetas */
+/* Tarjetas */
 .card {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  width: 100%; /* Ocupa el 100% del ancho disponible */
-  max-width: 250px; /* Límite para que no se estiren demasiado */
+  max-width: 250px;
   padding: 16px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -135,9 +132,9 @@ button:focus, .card-button:focus {
   justify-content: center;
 }
 
-/* Formulario y entradas */
+/* Formularios */
 input, select {
-  width: 100%; /* Asegura que ocupen todo el ancho disponible */
+  width: 100%;
   padding: 12px;
   margin: 10px 0;
   border: 1px solid #ccc;
@@ -150,7 +147,6 @@ input:focus, select:focus {
   box-shadow: 0 0 5px #61dafb;
 }
 
-/* Sombra de contenedor de formularios */
 .form-container {
   width: 100%;
   background-color: white;
@@ -162,14 +158,12 @@ input:focus, select:focus {
 
 /* Media Queries */
 @media (max-width: 768px) {
-  /* Diseño para móviles: las tarjetas ocupan el ancho completo */
   .card-container {
     gap: 12px;
   }
 
   .card {
-    width: 100%; /* En móviles, las tarjetas ocupan todo el ancho */
-    max-width: 100%; /* Sin límite de tamaño */
+    width: 100%;
     padding: 14px;
   }
 
@@ -180,38 +174,21 @@ input:focus, select:focus {
   .card-text {
     font-size: 0.9em;
   }
-
-  .card-button {
-    font-size: 1.1em;
-  }
-
-  /* Ajustes en formularios */
-  input, select {
-    padding: 14px;
-    font-size: 1.1em;
-  }
 }
 
 @media (min-width: 768px) {
-  /* En pantallas medianas, como tabletas */
   .App {
-    max-width: 80%; /* La aplicación se adapta al 80% del ancho */
+    max-width: 80%;
   }
 
   .card-container {
     gap: 20px;
   }
-
-  .card {
-    width: 250px;
-  }
 }
 
 @media (min-width: 1200px) {
-  /* En pantallas grandes, como PCs de escritorio */
   .App {
-    max-width: 100%; /* La aplicación ocupa todo el ancho */
-    margin: 0;
+    max-width: 100%;
   }
 
   .card-container {
@@ -219,6 +196,6 @@ input:focus, select:focus {
   }
 
   .card {
-    width: 300px; /* Ajuste del tamaño de las tarjetas en pantallas grandes */
+    width: 300px;
   }
 }

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import '../../App.css';
 import FormDetalleVentas from './detalle_Venta'; // Asegúrate de que esta ruta sea correcta
 import { useNavigate } from 'react-router-dom';
 
