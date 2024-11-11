@@ -20,12 +20,32 @@ async function getConnection() {
     }
 }
 
-// Route to fetch ventas
+// Route to fetch ventas with optional filter
 router.get('/ventas', async (req, res) => {
-    const query = 'SELECT ven.idVenta, ven.montoTotal, emp.nombre_apellidoEmp, cli.nombre_apellidoCli  FROM ventas ven INNER JOIN empleados emp ON ven.DNIEmpleado = emp.DNI_CUIL INNER JOIN clientes cli ON ven.idCliente = cli.idCliente';
+    const { filtro } = req.query; // Captura el filtro único
+
+    // Base de la consulta sin filtro
+    let query = `
+        SELECT ven.idVenta, ven.montoTotal, emp.nombre_apellidoEmp, cli.nombre_apellidoCli, 
+            DATE_FORMAT(ven.fechaHoraVenta, '%Y-%m-%d %H:%i:%s') AS fechaHoraVenta
+        FROM ventas ven
+        INNER JOIN empleados emp ON ven.DNIEmpleado = emp.DNI_CUIL
+        INNER JOIN clientes cli ON ven.idCliente = cli.idCliente
+    `;
+    
+    const params = [];
+    
+    // Si hay filtro, agregar condición WHERE
+    if (filtro) {
+        query += ` WHERE emp.nombre_apellidoEmp LIKE ? OR cli.nombre_apellidoCli LIKE ?`;
+        params.push(`%${filtro}%`, `%${filtro}%`);
+    }
+
+    query += ` ORDER BY ven.fechaHoraVenta DESC`; // Ordenar los resultados
+
     try {
         const connection = await getConnection();
-        const [rows] = await connection.query(query);
+        const [rows] = await connection.query(query, params); // Ejecutar consulta con parámetros
         connection.release();
         res.json(rows);
     } catch (error) {
@@ -34,19 +54,26 @@ router.get('/ventas', async (req, res) => {
     }
 });
 
+
+// Route to fetch detalle de ventas by idVenta
 router.get('/detalle_ventas/:idVenta', async (req, res) => {
-    const { idVenta } = req.params; // Captura el parámetro idVenta de la URL
-    const query = 'SELECT dven.idVenta, sto.articulo, sto.descripcion, dven.cantidadVendida, dven.subtotal  FROM productoventa dven INNER JOIN productos sto ON dven.idProducto = sto.idProducto WHERE dven.idVenta = ?'; // Filtro por idVenta
-    
+    const { idVenta } = req.params;
+    const query = `
+        SELECT dven.idVenta, sto.articulo, sto.descripcion, dven.cantidadVendida, dven.subtotal
+        FROM productoventa dven
+        INNER JOIN productos sto ON dven.idProducto = sto.idProducto
+        WHERE dven.idVenta = ?
+    `;
+
     try {
         const connection = await getConnection();
-        const [rows] = await connection.query(query, [idVenta]); // Pasa el idVenta como parámetro a la consulta
+        const [rows] = await connection.query(query, [idVenta]);
         connection.release();
         
         if (rows.length === 0) {
             res.status(404).json({ message: 'No se encontraron detalles para esta venta.' });
         } else {
-            res.json(rows); // Retorna los resultados si existen
+            res.json(rows);
         }
     } catch (error) {
         console.error('Error executing query:', error);
@@ -58,7 +85,7 @@ router.get('/detalle_ventas/:idVenta', async (req, res) => {
 router.post('/crearVenta', async (req, res) => {
     const { montoTotal, DNIEmpleado, idCliente, fechaHoraVenta } = req.body;
 
-    // Validación de campos
+    // Validate required fields
     if (!montoTotal || !DNIEmpleado || !idCliente || !fechaHoraVenta) {
         return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
     }
@@ -75,6 +102,63 @@ router.post('/crearVenta', async (req, res) => {
     } catch (error) {
         console.error('Error al crear la venta:', error);
         res.status(500).json({ error: 'Error al crear la venta.' });
+    }
+});
+
+// Route to get stock for ventas (with estado filter)
+router.get('/stockventa', async (req, res) => {
+    const { estado } = req.query;
+    const query = 'SELECT idProducto, articulo, descripcion, monto FROM productos WHERE estado = ?';
+
+    try {
+        const connection = await getConnection();
+        const [rows] = await connection.query(query, [estado]);
+        connection.release();
+        res.json(rows);
+    } catch (error) {
+        console.error('Error executing query:', error);
+        res.status(500).json({ error: 'Error en la consulta.' });
+    }
+});
+
+// Route to add products to a venta
+router.post('/agregarProductoVenta', async (req, res) => {
+    const { idVenta, idProducto, cantidadVendida, subtotal } = req.body;
+
+    if (!idVenta || !idProducto || !cantidadVendida || !subtotal) {
+        return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+    }
+
+    const query = 'INSERT INTO productoventa (idVenta, idProducto, cantidadVendida, subtotal) VALUES (?, ?, ?, ?)';
+    try {
+        const connection = await getConnection();
+        await connection.query(query, [idVenta, idProducto, cantidadVendida, subtotal]);
+        connection.release();
+        res.json({ message: 'Producto agregado a la venta' });
+    } catch (error) {
+        console.error('Error al agregar el producto:', error);
+        res.status(500).json({ error: 'Error al agregar el producto.' });
+    }
+});
+
+// Route to update the total amount of a venta
+router.put('/ventas/:idVenta', async (req, res) => {
+    const { idVenta } = req.params;
+    const { totalVenta } = req.body;
+  
+    try {
+        const connection = await getConnection();
+        const result = await connection.query('UPDATE ventas SET montoTotal = ? WHERE idVenta = ?', [totalVenta, idVenta]);
+        connection.release();
+  
+        if (result.affectedRows > 0) {
+            res.status(200).json({ message: 'Venta actualizada con éxito' });
+        } else {
+            res.status(404).json({ message: 'Venta no encontrada' });
+        }
+    } catch (error) {
+        console.error('Error al actualizar la venta:', error);
+        res.status(500).json({ message: 'Error al actualizar la venta' });
     }
 });
 

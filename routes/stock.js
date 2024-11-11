@@ -56,6 +56,42 @@ router.get('/stock', async (req, res) => {
     }
 });
 
+router.get('/stockventa', async (req, res) => {
+    const { producto, estado } = req.query;
+
+    try {
+        const connection = await getConnection();
+        let query = `
+            SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto
+            FROM productos prod
+            INNER JOIN precios pre ON prod.idProducto = pre.idProducto
+            WHERE prod.estado = ? AND cantidad > 0 AND pre.fechaHora = (
+                SELECT MAX(fechaHora) 
+                FROM precios 
+                WHERE idProducto = prod.idProducto)
+        `;
+
+        // Define queryParams con un valor predeterminado para estado si es undefined
+        let queryParams = [estado || 'Alta'];
+
+        if (producto) {
+            query += ' AND (prod.articulo LIKE ? OR prod.descripcion LIKE ?)';
+            queryParams.push(`%${producto}%`, `%${producto}%`);
+        }
+
+        // Verifica y reemplaza valores undefined con null si es necesario
+        queryParams = queryParams.map(param => (param === undefined ? null : param));
+
+        const [rows] = await connection.execute(query, queryParams);
+        connection.release();
+
+        res.status(200).json(rows);
+    } catch (error) {
+        console.error('Error al obtener productos:', error);
+        res.status(500).json({ error: 'Error al obtener productos' });
+    }
+});
+
 router.post("/stock", async (req, res) => {
     const { articulo, descripcion, cantidad, monto } = req.body;
 
@@ -145,10 +181,15 @@ router.put('/stockelim/:id', async (req, res) => {
 
         const nuevoEstado = estado === 'Alta' ? 'Baja' : 'Alta';
         const query1 = 'UPDATE productos SET estado = ? WHERE idProducto = ?';
-        await connection.execute(query1, [nuevoEstado, idProducto]);
+        const [result] = await connection.execute(query1, [nuevoEstado, idProducto]);
 
         await connection.commit();
-        res.status(200).json(rows[0]);
+
+        if (result.affectedRows > 0) {
+            res.status(200).json({ message: 'Estado actualizado correctamente', nuevoEstado });
+        } else {
+            res.status(404).json({ error: 'Producto no encontrado' });
+        }
     } catch (error) {
         console.error('Error al actualizar el estado del producto:', error);
 

@@ -47,19 +47,36 @@ router.get('/clientes', async (req, res) => {
     }
 });
 
-// Ruta para obtener la lista de clientes
-router.get('/clientesventa', async (req, res) => {
-    const query = 'SELECT id_cliente, nombre FROM clientes';  // Suponiendo que tienes los campos 'id_cliente' y 'nombre'
-    try {
-        const connection = await getConnection();
-        const [rows] = await connection.query(query);
-        connection.release();
-        res.json(rows);  // Devolvemos la lista de clientes
-    } catch (error) {
-        console.error('Error al obtener clientes:', error);
-        res.status(500).json({ error: 'Error al obtener clientes.' });
+router.get('/clientesventa/:dni', async (req, res) => {
+    const { dni } = req.params; // Captura el DNI desde la URL de la solicitud
+  
+    // Si no se proporciona un DNI, devuelve un error
+    if (!dni) {
+      return res.status(400).json({ error: 'DNI no proporcionado' });
     }
-});
+  
+    try {
+      // Consulta SQL para obtener el cliente por DNI
+      const query = `
+        SELECT idCliente
+        FROM clientes
+        WHERE DNI = ?`; // Ajusta el campo según tu esquema de base de datos
+  
+      const connection = await getConnection();
+      const [rows] = await connection.query(query, [dni]);
+      connection.release();
+  
+      // Si se encuentra el cliente, se responde con los datos
+      if (rows.length > 0) {
+        res.json(rows[0]); // Retorna el primer cliente encontrado
+      } else {
+        res.status(404).json({ error: 'Cliente no encontrado' });
+      }
+    } catch (error) {
+      console.error('Error al obtener cliente:', error);
+      res.status(500).json({ error: 'Error en la consulta' });
+    }
+  });
 
 
 // Ruta para agregar un cliente
