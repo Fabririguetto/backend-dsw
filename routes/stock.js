@@ -72,7 +72,7 @@ router.get('/stockventa', async (req, res) => {
         `;
 
         // Define queryParams con un valor predeterminado para estado si es undefined
-        let queryParams = [estado || 'Alta'];
+        let queryParams = [estado || 'Disponible'];
 
         if (producto) {
             query += ' AND (prod.articulo LIKE ? OR prod.descripcion LIKE ?)';

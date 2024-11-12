@@ -82,7 +82,7 @@ router.get('/detalle_ventas/:idVenta', async (req, res) => {
 });
 
 // Route to create a new venta
-router.post('/crearVenta', async (req, res) => {
+router.post('/ventas/crearVenta', async (req, res) => {
     const { montoTotal, DNIEmpleado, idCliente, fechaHoraVenta } = req.body;
 
     // Validate required fields
@@ -122,22 +122,34 @@ router.get('/stockventa', async (req, res) => {
 });
 
 // Route to add products to a venta
-router.post('/agregarProductoVenta', async (req, res) => {
-    const { idVenta, idProducto, cantidadVendida, subtotal } = req.body;
+router.post('/ventas/agregarProductosVenta', async (req, res) => {
+    const { idVenta, productos } = req.body; // productos es un array de objetos
 
-    if (!idVenta || !idProducto || !cantidadVendida || !subtotal) {
-        return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+    if (!idVenta || !productos || productos.length === 0) {
+        return res.status(400).json({ error: 'Venta y productos son obligatorios.' });
     }
 
-    const query = 'INSERT INTO productoventa (idVenta, idProducto, cantidadVendida, subtotal) VALUES (?, ?, ?, ?)';
+    // Empezamos la transacción para agregar todos los productos
+    const connection = await getConnection();
     try {
-        const connection = await getConnection();
-        await connection.query(query, [idVenta, idProducto, cantidadVendida, subtotal]);
+        await connection.beginTransaction();
+
+        for (let producto of productos) {
+            const { idProducto, cantidadVendida, subtotal } = producto;
+
+            // Agregar cada producto a la venta
+            const query = 'INSERT INTO productoventa (idVenta, idProducto, cantidadVendida, subtotal) VALUES (?, ?, ?, ?)';
+            await connection.query(query, [idVenta, idProducto, cantidadVendida, subtotal]);
+        }
+
+        await connection.commit();
         connection.release();
-        res.json({ message: 'Producto agregado a la venta' });
+        res.json({ message: 'Productos agregados a la venta exitosamente.' });
     } catch (error) {
-        console.error('Error al agregar el producto:', error);
-        res.status(500).json({ error: 'Error al agregar el producto.' });
+        await connection.rollback();
+        connection.release();
+        console.error('Error al agregar productos:', error);
+        res.status(500).json({ error: 'Error al agregar productos.' });
     }
 });
 

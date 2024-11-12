@@ -26,8 +26,11 @@ router.get('/empleados', async (req, res) => {
 
     try {
         const connection = await getConnection();
-        let query = 'SELECT emp.DNI_CUIL, emp.nombre_apellidoEmp, emp.contacto, suc.nombreSucursal, suc.idSucursal FROM empleados emp INNER JOIN sucursales suc ON emp.idSucursal = suc.idSucursal';
-        let queryParams = [];
+        let query = `SELECT emp.DNI_CUIL, emp.nombre_apellidoEmp, emp.contacto, suc.nombreSucursal, suc.idSucursal 
+                    FROM empleados emp 
+                    INNER JOIN sucursales suc ON emp.idSucursal = suc.idSucursal
+                    `
+                    let queryParams = [];
 
         if (nombre) {
             query += ' WHERE (DNI_CUIL LIKE ? OR nombre_apellidoEmp LIKE ?)';
