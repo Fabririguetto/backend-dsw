@@ -20,50 +20,23 @@ async function getConnection() {
     }
 }
 
-// router.get('/stock', async (req, res) => {
-//     const { producto, limit = 20, offset = 0 } = req.query;
-  
-//        try {
-//     const connection = await getConnection();
-//     let query = 
-//         SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto
-//         FROM productos prod
-//         INNER JOIN precios pre ON prod.idProducto = pre.idProducto
-//         WHERE prod.estado = 'Disponible'
-//         AND pre.fechaHora = (
-//             SELECT MAX(p2.fechaHora)
-//             FROM precios p2
-//             WHERE p2.idProducto = prod.idProducto
-//         )
-//     ;
-
-//     let queryParams = [];
-
-//     if (producto) {
-//         query += ' AND (prod.articulo LIKE ? OR prod.descripcion LIKE ?)';
-//         queryParams.push(%${producto}%, %${producto}%);
-//     }
-
-//     query += ' LIMIT ? OFFSET ?';
-//     queryParams.push(Number(limit), Number(offset));
-
-//     const [rows] = await connection.execute(query, queryParams);
-//     connection.release();
-
-//     res.status(200).json(rows);
-// } catch (error) {
-//     console.error('Error al obtener productos:', error);
-//     res.status(500).json({ error: 'Error al obtener productos' });
-// }
-// });
 
 router.get('/stock', async (req, res) => {
-    const { producto = '', } = req.query; // Asignar valores por defecto a los parámetros
-    
+    const { producto = '', limite = 20, pagina = 0 } = req.query;
+
+    // Asegúrate de que los parámetros son números válidos
+    const limitValue = parseInt(limite, 10) || 20;
+    const pageValue = Math.max(0, parseInt(pagina, 10)); // Asegúrate de que la página no sea negativa
+    const offsetValue = pageValue * limitValue;
+
+    console.log('Parámetros de entrada:');
+    console.log(`producto: ${producto}, limite: ${limite}, pagina: ${pagina}`);
+    console.log(`limitValue: ${limitValue}, pageValue: ${pageValue}, offsetValue: ${offsetValue}`);
+
     try {
         const connection = await getConnection();
-        
-        // Iniciar la consulta base
+
+        // Construcción de la consulta principal
         let query = `
             SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto
             FROM productos prod
@@ -73,37 +46,58 @@ router.get('/stock', async (req, res) => {
                 SELECT MAX(p2.fechaHora)
                 FROM precios p2
                 WHERE p2.idProducto = prod.idProducto
-            )
-        `;
-    
+            )`;
+
         let queryParams = [];
-    
-        // Si se pasa el parámetro 'producto', lo usamos para filtrar en articulo o descripcion
+
+        // Agregar filtro por producto (artículo o descripción) si existe
         if (producto) {
             query += ' AND (prod.articulo LIKE ? OR prod.descripcion LIKE ?)';
-            queryParams.push(`%${producto}%`, `%${producto}%`);  // Agregar el parámetro de búsqueda
+            queryParams.push(`%${producto}%`, `%${producto}%`);
         }
-        
-        // Ejecutar la consulta con los parámetros
+
+        // Añadir LIMIT y OFFSET a la consulta
+        query += ` LIMIT ${limitValue} OFFSET ${offsetValue}`;
+
+        // Ejecutar la consulta para obtener los productos
         const [rows] = await connection.execute(query, queryParams);
+
+        // Consulta para obtener el total de productos (con el filtro si aplica)
+        let totalQuery = `
+            SELECT COUNT(*) AS total
+            FROM productos prod
+            WHERE prod.estado = 'Disponible'`;
+
+        // Aquí nos aseguramos de usar un arreglo limpio para los parámetros
+        let totalQueryParams = [];
+
+        if (producto) {
+            totalQuery += ' AND (prod.articulo LIKE ? OR prod.descripcion LIKE ?)';
+            totalQueryParams.push(`%${producto}%`, `%${producto}%`);
+        }
+
+        const [totalRows] = await connection.execute(totalQuery, totalQueryParams);
+        const totalProductos = totalRows[0].total;
+        const totalPages = Math.ceil(totalProductos / limitValue);
+
         connection.release();
-    
-        // Si no se encuentran productos, enviar un mensaje adecuado
+
+        console.log(`Total productos: ${totalProductos}, Total páginas: ${totalPages}`);
+
         if (rows.length === 0) {
             return res.status(404).json({ message: 'No se encontraron productos' });
         }
-    
-        // Enviar los productos encontrados
-        res.status(200).json(rows);
+
+        res.status(200).json({
+            productos: rows,
+            totalProductos,
+            totalPages,
+        });
     } catch (error) {
         console.error('Error al obtener productos:', error);
         res.status(500).json({ error: 'Error al obtener productos' });
     }
 });
-
-  
-  
-  
   
 router.get('/stockventa', async (req, res) => {
     const { producto, estado } = req.query;
