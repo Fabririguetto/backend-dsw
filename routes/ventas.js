@@ -170,25 +170,26 @@ router.post('/ventas/agregarProductosVenta', async (req, res) => {
     }
 });
 
-// Route to update the total amount of a venta
+// Ruta para actualizar el monto de una venta
 router.put('/ventas/:idVenta', async (req, res) => {
     const { idVenta } = req.params;
     const { totalVenta } = req.body;
   
     try {
-        const connection = await getConnection();
-        const result = await connection.query('UPDATE ventas SET montoTotal = ? WHERE idVenta = ?', [totalVenta, idVenta]);
-        connection.release();
+      const connection = await getConnection();
+      const result = await connection.query('UPDATE ventas SET montoTotal = ? WHERE idVenta = ?', [totalVenta, idVenta]);
+      connection.release();
   
-        if (result.affectedRows > 0) {
-            res.status(200).json({ message: 'Venta actualizada con éxito' });
-        } else {
-            res.status(404).json({ message: 'Venta no encontrada' });
-        }
+      if (result.affectedRows > 0) {
+        res.status(200).json({ message: 'Venta actualizada con éxito' });
+      } else {
+        res.status(404).json({ message: 'Venta no encontrada' });
+      }
     } catch (error) {
-        console.error('Error al actualizar la venta:', error);
-        res.status(500).json({ message: 'Error al actualizar la venta' });
+      console.error('Error al actualizar la venta:', error);
+      res.status(500).json({ message: 'Error al actualizar la venta' });
     }
-});
+  });
+  
 
 module.exports = router;

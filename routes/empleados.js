@@ -27,13 +27,12 @@ router.get('/empleados', async (req, res) => {
     try {
         const connection = await getConnection();
         let query = `SELECT emp.DNI_CUIL, emp.nombre_apellidoEmp, emp.contacto, suc.nombreSucursal, suc.idSucursal 
-                    FROM empleados emp 
-                    INNER JOIN sucursales suc ON emp.idSucursal = suc.idSucursal
-                    `
-                    let queryParams = [];
+                     FROM empleados emp 
+                     INNER JOIN sucursales suc ON emp.idSucursal = suc.idSucursal`;
+        let queryParams = [];
 
         if (nombre) {
-            query += ' WHERE (DNI_CUIL LIKE ? OR nombre_apellidoEmp LIKE ?)';
+            query += ' WHERE (emp.DNI_CUIL LIKE ? OR emp.nombre_apellidoEmp LIKE ?)';
             queryParams.push(`%${nombre}%`, `%${nombre}%`);
         }
 
@@ -48,73 +47,49 @@ router.get('/empleados', async (req, res) => {
 });
 
 // Ruta para agregar un empleado
-router.post("/empleados", async (req, res) => {
-    const { dni, nombre_apellidoEmp, contacto, sucursal } = req.body;
+router.post('/empleados', async (req, res) => {
+    const { DNI_CUIL, nombre_apellidoEmp, contacto, sucursal } = req.body;
 
-    if (!dni || !nombre_apellidoEmp || !contacto || !sucursal) {
+    if (!DNI_CUIL || !nombre_apellidoEmp || !contacto || !sucursal) {
         return res.status(400).json({ error: 'Faltan datos necesarios para insertar el empleado' });
     }
 
-    let connection;
-
     try {
-        connection = await getConnection();
-        await connection.beginTransaction();
+        const connection = await getConnection();
+        await connection.execute(
+            'INSERT INTO empleados (DNI_CUIL, nombre_apellidoEmp, contacto, idSucursal) VALUES (?, ?, ?, ?)',
+            [DNI_CUIL, nombre_apellidoEmp, contacto, sucursal]
+        );
+        connection.release();
 
-        const query1 = 'INSERT INTO empleados (DNI_CUIL, nombre_apellidoEmp, contacto, idSucursal) VALUES (?, ?, ?, ?)';
-        //const [result1] = await connection.execute(query1, [dni, nombre_apellidoEmp, contacto, sucursal]);
-        await connection.execute(query1, [dni, nombre_apellidoEmp, contacto, sucursal]);
-
-
-        await connection.commit();
-        res.status(200).json(rows[0]);
+        res.status(201).json({ message: 'Empleado ingresado correctamente' });
     } catch (error) {
         console.error('Error al ingresar el empleado:', error);
-
-        if (connection) {
-            await connection.rollback();
-        }
-
         res.status(500).json({ error: 'Error al ingresar el empleado' });
-    } finally {
-        if (connection) {
-            connection.release();
-        }
     }
 });
 
 // Ruta para actualizar un empleado
 router.put('/empleados/:id', async (req, res) => {
     const idEmpleado = req.params.id;
-    const { dni, nombre_apellidoEmp, contacto } = req.body;
+    const { nombre_apellidoEmp, contacto, sucursal } = req.body;
 
-    if (!dni || !nombre_apellidoEmp || !contacto) {
+    if (!idEmpleado || !nombre_apellidoEmp || !contacto) {
         return res.status(400).json({ error: 'Faltan datos necesarios para actualizar el empleado' });
     }
 
-    let connection;
-
     try {
-        connection = await getConnection();
-        await connection.beginTransaction();
+        const connection = await getConnection();
+        await connection.execute(
+            'UPDATE empleados SET nombre_apellidoEmp = ?, contacto = ?, idSucursal = ? WHERE DNI_CUIL = ?',
+            [nombre_apellidoEmp, contacto, sucursal, idEmpleado]
+        );
+        connection.release();
 
-        const query1 = 'UPDATE empleados SET nombre_apellidoEmp = ?, contacto = ? WHERE DNI_CUIL = ?';
-        await connection.execute(query1, [nombre_apellidoEmp, contacto, dni]);
-
-        await connection.commit();
-        res.status(200).json(rows[0]);
+        res.status(200).json({ message: 'Empleado actualizado correctamente' });
     } catch (error) {
         console.error('Error al actualizar el empleado:', error);
-
-        if (connection) {
-            await connection.rollback();
-        }
-
         res.status(500).json({ error: 'Error al actualizar el empleado' });
-    } finally {
-        if (connection) {
-            connection.release();
-        }
     }
 });
 

@@ -20,35 +20,80 @@ async function getConnection() {
     }
 }
 
-router.get('/stock', async (req, res) => {
-    const { producto, estado } = req.query;
+// router.get('/stock', async (req, res) => {
+//     const { producto, limit = 20, offset = 0 } = req.query;
+  
+//        try {
+//     const connection = await getConnection();
+//     let query = 
+//         SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto
+//         FROM productos prod
+//         INNER JOIN precios pre ON prod.idProducto = pre.idProducto
+//         WHERE prod.estado = 'Disponible'
+//         AND pre.fechaHora = (
+//             SELECT MAX(p2.fechaHora)
+//             FROM precios p2
+//             WHERE p2.idProducto = prod.idProducto
+//         )
+//     ;
 
+//     let queryParams = [];
+
+//     if (producto) {
+//         query += ' AND (prod.articulo LIKE ? OR prod.descripcion LIKE ?)';
+//         queryParams.push(%${producto}%, %${producto}%);
+//     }
+
+//     query += ' LIMIT ? OFFSET ?';
+//     queryParams.push(Number(limit), Number(offset));
+
+//     const [rows] = await connection.execute(query, queryParams);
+//     connection.release();
+
+//     res.status(200).json(rows);
+// } catch (error) {
+//     console.error('Error al obtener productos:', error);
+//     res.status(500).json({ error: 'Error al obtener productos' });
+// }
+// });
+
+router.get('/stock', async (req, res) => {
+    const { producto = '', } = req.query; // Asignar valores por defecto a los parámetros
+    
     try {
         const connection = await getConnection();
+        
+        // Iniciar la consulta base
         let query = `
             SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto
             FROM productos prod
             INNER JOIN precios pre ON prod.idProducto = pre.idProducto
-            WHERE prod.estado = ? AND pre.fechaHora = (
-                SELECT MAX(fechaHora) 
-                FROM precios 
-                WHERE idProducto = prod.idProducto)
+            WHERE prod.estado = 'Disponible'
+            AND pre.fechaHora = (
+                SELECT MAX(p2.fechaHora)
+                FROM precios p2
+                WHERE p2.idProducto = prod.idProducto
+            )
         `;
-
-        // Define queryParams con un valor predeterminado para estado si es undefined
-        let queryParams = [estado || 'Alta'];
-
+    
+        let queryParams = [];
+    
+        // Si se pasa el parámetro 'producto', lo usamos para filtrar en articulo o descripcion
         if (producto) {
             query += ' AND (prod.articulo LIKE ? OR prod.descripcion LIKE ?)';
-            queryParams.push(`%${producto}%`, `%${producto}%`);
+            queryParams.push(`%${producto}%`, `%${producto}%`);  // Agregar el parámetro de búsqueda
         }
-
-        // Verifica y reemplaza valores undefined con null si es necesario
-        queryParams = queryParams.map(param => (param === undefined ? null : param));
-
+        
+        // Ejecutar la consulta con los parámetros
         const [rows] = await connection.execute(query, queryParams);
         connection.release();
-
+    
+        // Si no se encuentran productos, enviar un mensaje adecuado
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron productos' });
+        }
+    
+        // Enviar los productos encontrados
         res.status(200).json(rows);
     } catch (error) {
         console.error('Error al obtener productos:', error);
@@ -56,6 +101,10 @@ router.get('/stock', async (req, res) => {
     }
 });
 
+  
+  
+  
+  
 router.get('/stockventa', async (req, res) => {
     const { producto, estado } = req.query;
 
