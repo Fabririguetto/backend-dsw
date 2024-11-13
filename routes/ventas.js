@@ -137,19 +137,36 @@ router.post('/ventas/agregarProductosVenta', async (req, res) => {
         for (let producto of productos) {
             const { idProducto, cantidadVendida, subtotal } = producto;
 
-            // Agregar cada producto a la venta
-            const query = 'INSERT INTO productoventa (idVenta, idProducto, cantidadVendida, subtotal) VALUES (?, ?, ?, ?)';
-            await connection.query(query, [idVenta, idProducto, cantidadVendida, subtotal]);
+            // Validar que haya suficiente stock para cada producto
+            const [stockResult] = await connection.query('SELECT cantidad FROM productos WHERE idProducto = ?', [idProducto]);
+            
+            if (stockResult.length === 0) {
+                throw new Error(`El producto con ID ${idProducto} no existe.`);
+            }
+
+            const cantidadDisponible = stockResult[0].cantidad;
+
+            if (cantidadVendida > cantidadDisponible) {
+                throw new Error(`No hay suficiente stock para el producto ${idProducto}. Disponible: ${cantidadDisponible}, solicitado: ${cantidadVendida}.`);
+            }
+
+            // Agregar el producto a la venta
+            const queryInsertVenta = 'INSERT INTO productoventa (idVenta, idProducto, cantidadVendida, subtotal) VALUES (?, ?, ?, ?)';
+            await connection.query(queryInsertVenta, [idVenta, idProducto, cantidadVendida, subtotal]);
+
+            // Reducir el stock disponible del producto
+            const queryActualizarStock = 'UPDATE productos SET cantidad = cantidad - ? WHERE idProducto = ?';
+            await connection.query(queryActualizarStock, [cantidadVendida, idProducto]);
         }
 
         await connection.commit();
         connection.release();
-        res.json({ message: 'Productos agregados a la venta exitosamente.' });
+        res.json({ message: 'Productos agregados a la venta y stock actualizado exitosamente.' });
     } catch (error) {
         await connection.rollback();
         connection.release();
-        console.error('Error al agregar productos:', error);
-        res.status(500).json({ error: 'Error al agregar productos.' });
+        console.error('Error al agregar productos o actualizar stock:', error);
+        res.status(500).json({ error: 'Error al agregar productos o actualizar stock.' });
     }
 });
 
