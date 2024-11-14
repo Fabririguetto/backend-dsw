@@ -24,9 +24,8 @@ async function getConnection() {
 router.get('/stock', async (req, res) => {
     const { producto = '', limite = 20, pagina = 0 } = req.query;
 
-    // Asegúrate de que los parámetros son números válidos
     const limitValue = parseInt(limite, 10) || 20;
-    const pageValue = Math.max(0, parseInt(pagina, 10)); // Asegúrate de que la página no sea negativa
+    const pageValue = Math.max(0, parseInt(pagina, 10));
     const offsetValue = pageValue * limitValue;
 
     console.log('Parámetros de entrada:');
@@ -36,7 +35,6 @@ router.get('/stock', async (req, res) => {
     try {
         const connection = await getConnection();
 
-        // Construcción de la consulta principal
         let query = `
             SELECT prod.idProducto, prod.articulo, prod.descripcion, prod.cantidad, pre.monto
             FROM productos prod
@@ -50,25 +48,20 @@ router.get('/stock', async (req, res) => {
 
         let queryParams = [];
 
-        // Agregar filtro por producto (artículo o descripción) si existe
         if (producto) {
             query += ' AND (prod.articulo LIKE ? OR prod.descripcion LIKE ?)';
             queryParams.push(`%${producto}%`, `%${producto}%`);
         }
 
-        // Añadir LIMIT y OFFSET a la consulta
         query += ` LIMIT ${limitValue} OFFSET ${offsetValue}`;
 
-        // Ejecutar la consulta para obtener los productos
         const [rows] = await connection.execute(query, queryParams);
 
-        // Consulta para obtener el total de productos (con el filtro si aplica)
         let totalQuery = `
             SELECT COUNT(*) AS total
             FROM productos prod
             WHERE prod.estado = 'Disponible'`;
 
-        // Aquí nos aseguramos de usar un arreglo limpio para los parámetros
         let totalQueryParams = [];
 
         if (producto) {
@@ -114,7 +107,6 @@ router.get('/stockventa', async (req, res) => {
                 WHERE idProducto = prod.idProducto)
         `;
 
-        // Define queryParams con un valor predeterminado para estado si es undefined
         let queryParams = [estado || 'Disponible'];
 
         if (producto) {
@@ -122,7 +114,6 @@ router.get('/stockventa', async (req, res) => {
             queryParams.push(`%${producto}%`, `%${producto}%`);
         }
 
-        // Verifica y reemplaza valores undefined con null si es necesario
         queryParams = queryParams.map(param => (param === undefined ? null : param));
 
         const [rows] = await connection.execute(query, queryParams);

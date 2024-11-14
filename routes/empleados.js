@@ -20,7 +20,6 @@ async function getConnection() {
     }
 }
 
-// Ruta para obtener empleados con filtro opcional por nombre
 router.get('/empleados', async (req, res) => {
     const { nombre } = req.query;
 
@@ -46,7 +45,6 @@ router.get('/empleados', async (req, res) => {
     }
 });
 
-// Ruta para agregar un empleado
 router.post('/empleados', async (req, res) => {
     const { DNI_CUIL, nombre_apellidoEmp, contacto, sucursal } = req.body;
 

@@ -20,11 +20,9 @@ async function getConnection() {
     }
 }
 
-// Route to fetch ventas with optional filter
 router.get('/ventas', async (req, res) => {
-    const { filtro } = req.query; // Captura el filtro único
+    const { filtro } = req.query; 
 
-    // Base de la consulta sin filtro
     let query = `
         SELECT ven.idVenta, ven.montoTotal, emp.nombre_apellidoEmp, cli.nombre_apellidoCli, 
             DATE_FORMAT(ven.fechaHoraVenta, '%Y-%m-%d %H:%i:%s') AS fechaHoraVenta
@@ -35,17 +33,17 @@ router.get('/ventas', async (req, res) => {
     
     const params = [];
     
-    // Si hay filtro, agregar condición WHERE
+
     if (filtro) {
         query += ` WHERE emp.nombre_apellidoEmp LIKE ? OR cli.nombre_apellidoCli LIKE ?`;
         params.push(`%${filtro}%`, `%${filtro}%`);
     }
 
-    query += ` ORDER BY ven.fechaHoraVenta DESC`; // Ordenar los resultados
+    query += ` ORDER BY ven.fechaHoraVenta DESC`; 
 
     try {
         const connection = await getConnection();
-        const [rows] = await connection.query(query, params); // Ejecutar consulta con parámetros
+        const [rows] = await connection.query(query, params); 
         connection.release();
         res.json(rows);
     } catch (error) {
@@ -55,7 +53,6 @@ router.get('/ventas', async (req, res) => {
 });
 
 
-// Route to fetch detalle de ventas by idVenta
 router.get('/detalle_ventas/:idVenta', async (req, res) => {
     const { idVenta } = req.params;
     const query = `
@@ -81,11 +78,9 @@ router.get('/detalle_ventas/:idVenta', async (req, res) => {
     }
 });
 
-// Route to create a new venta
 router.post('/ventas/crearVenta', async (req, res) => {
     const { montoTotal, DNIEmpleado, idCliente, fechaHoraVenta } = req.body;
 
-    // Validate required fields
     if (!montoTotal || !DNIEmpleado || !idCliente || !fechaHoraVenta) {
         return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
     }
@@ -105,7 +100,6 @@ router.post('/ventas/crearVenta', async (req, res) => {
     }
 });
 
-// Route to get stock for ventas (with estado filter)
 router.get('/stockventa', async (req, res) => {
     const { estado } = req.query;
     const query = 'SELECT idProducto, articulo, descripcion, monto FROM productos WHERE estado = ?';
@@ -121,15 +115,13 @@ router.get('/stockventa', async (req, res) => {
     }
 });
 
-// Route to add products to a venta
 router.post('/ventas/agregarProductosVenta', async (req, res) => {
-    const { idVenta, productos } = req.body; // productos es un array de objetos
+    const { idVenta, productos } = req.body; 
 
     if (!idVenta || !productos || productos.length === 0) {
         return res.status(400).json({ error: 'Venta y productos son obligatorios.' });
     }
 
-    // Empezamos la transacción para agregar todos los productos
     const connection = await getConnection();
     try {
         await connection.beginTransaction();
@@ -137,7 +129,6 @@ router.post('/ventas/agregarProductosVenta', async (req, res) => {
         for (let producto of productos) {
             const { idProducto, cantidadVendida, subtotal } = producto;
 
-            // Validar que haya suficiente stock para cada producto
             const [stockResult] = await connection.query('SELECT cantidad FROM productos WHERE idProducto = ?', [idProducto]);
             
             if (stockResult.length === 0) {
@@ -150,11 +141,9 @@ router.post('/ventas/agregarProductosVenta', async (req, res) => {
                 throw new Error(`No hay suficiente stock para el producto ${idProducto}. Disponible: ${cantidadDisponible}, solicitado: ${cantidadVendida}.`);
             }
 
-            // Agregar el producto a la venta
             const queryInsertVenta = 'INSERT INTO productoventa (idVenta, idProducto, cantidadVendida, subtotal) VALUES (?, ?, ?, ?)';
             await connection.query(queryInsertVenta, [idVenta, idProducto, cantidadVendida, subtotal]);
 
-            // Reducir el stock disponible del producto
             const queryActualizarStock = 'UPDATE productos SET cantidad = cantidad - ? WHERE idProducto = ?';
             await connection.query(queryActualizarStock, [cantidadVendida, idProducto]);
         }
@@ -170,7 +159,6 @@ router.post('/ventas/agregarProductosVenta', async (req, res) => {
     }
 });
 
-// Ruta para actualizar el monto de una venta
 router.put('/ventas/:idVenta', async (req, res) => {
     const { idVenta } = req.params;
     const { totalVenta } = req.body;

@@ -20,7 +20,6 @@ async function getConnection() {
     }
 }
 
-// Ruta para obtener clientes con filtro opcional por nombre
 router.get('/clientes', async (req, res) => {
     const { nombre } = req.query;
 
@@ -34,7 +33,6 @@ router.get('/clientes', async (req, res) => {
             queryParams.push(`%${nombre}%`, `%${nombre}%`);
         }
 
-        // Verifica que queryParams no contenga valores undefined
         queryParams = queryParams.map(param => (param === undefined ? null : param));
 
         const [rows] = await connection.execute(query, queryParams);
@@ -48,27 +46,24 @@ router.get('/clientes', async (req, res) => {
 });
 
 router.get('/clientesventa/:dni', async (req, res) => {
-    const { dni } = req.params; // Captura el DNI desde la URL de la solicitud
+    const { dni } = req.params;
   
-    // Si no se proporciona un DNI, devuelve un error
     if (!dni) {
       return res.status(400).json({ error: 'DNI no proporcionado' });
     }
   
     try {
-      // Consulta SQL para obtener el cliente por DNI
       const query = `
         SELECT idCliente
         FROM clientes
-        WHERE DNI = ?`; // Ajusta el campo según tu esquema de base de datos
+        WHERE DNI = ?`; 
   
       const connection = await getConnection();
       const [rows] = await connection.query(query, [dni]);
       connection.release();
   
-      // Si se encuentra el cliente, se responde con los datos
       if (rows.length > 0) {
-        res.json(rows[0]); // Retorna el primer cliente encontrado
+        res.json(rows[0]); 
       } else {
         res.status(404).json({ error: 'Cliente no encontrado' });
       }
@@ -79,7 +74,6 @@ router.get('/clientesventa/:dni', async (req, res) => {
   });
 
 
-// Ruta para agregar un cliente
 router.post("/clientes", async (req, res) => {
     const { dni, nombre_apellidoCli, direccion, contacto } = req.body;
 
@@ -122,7 +116,6 @@ router.post("/clientes", async (req, res) => {
     }
 });
 
-// Ruta para actualizar un cliente
 router.put('/clientes/:id', async (req, res) => {
     const idCliente = req.params.id;
     const { dni, nombre_apellidoCli, direccion, contacto } = req.body;
