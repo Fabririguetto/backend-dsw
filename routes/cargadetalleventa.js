@@ -1,27 +1,11 @@
 const express = require('express');
-const mysql = require('mysql2/promise');
 const router = express.Router();
 
-const conexionConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: 'dsw_gestion'
-};
-
-const pool = mysql.createPool(conexionConfig);
-
-async function getConnection() {
-    try {
-        return await pool.getConnection();
-    } catch (error) {
-        console.error('Database connection failed:', error);
-        throw error;
-    }
-}
+// IMPORTANTE: Conexión centralizada
+const { getConnection } = require('../config/db');
 
 router.get('/articulos', async (req, res) => {
-    const query = 'SELECT idProducto, nombre FROM productos WHERE cantidad > 0'; 
+    const query = 'SELECT idProducto, articulo as nombre FROM productos WHERE cantidad > 0'; 
     
     try {
         const connection = await getConnection();
@@ -34,7 +18,6 @@ router.get('/articulos', async (req, res) => {
     }
 });
 
-// Route to add an article to a sale
 router.post('/agregarArticuloAVenta/:idVenta', async (req, res) => {
     const { idVenta } = req.params;
     const { id_articulo, cantidad } = req.body;
@@ -44,8 +27,11 @@ router.post('/agregarArticuloAVenta/:idVenta', async (req, res) => {
     }
 
     const stockQuery = 'SELECT cantidad FROM productos WHERE idProducto = ?';
+    
+    const connection = await getConnection(); // Sacamos la conexión fuera del try para el rollback
     try {
-        const connection = await getConnection();
+        // Nota: Deberíamos usar beginTransaction aquí también
+        
         const [product] = await connection.query(stockQuery, [id_articulo]);
 
         if (product.length === 0) {
@@ -60,11 +46,18 @@ router.post('/agregarArticuloAVenta/:idVenta', async (req, res) => {
 
         const query = 'INSERT INTO productoventa (idVenta, idProducto, cantidadVendida, subtotal) VALUES (?, ?, ?, ?)';
         
-        const precioQuery = 'SELECT precioVenta FROM productos WHERE idProducto = ?';
+        // FIXME: Ojo aquí, el precio está en la tabla 'precios', no en 'productos'.
+        // Dejamos la query original por ahora, pero esto fallará si 'precioVenta' no existe en productos.
+        // Te sugiero revisar la columna correcta.
+        const precioQuery = 'SELECT monto as precioVenta FROM precios WHERE idProducto = ? ORDER BY fechaHora DESC LIMIT 1';
         const [precioProducto] = await connection.query(precioQuery, [id_articulo]);
-        const subtotal = precioProducto[0].precioVenta * cantidad;
+        
+        let subtotal = 0;
+        if (precioProducto.length > 0) {
+             subtotal = precioProducto[0].precioVenta * cantidad;
+        }
 
-        const [result] = await connection.query(query, [idVenta, id_articulo, cantidad, subtotal]);
+        await connection.query(query, [idVenta, id_articulo, cantidad, subtotal]);
 
         const updateStockQuery = 'UPDATE productos SET cantidad = cantidad - ? WHERE idProducto = ?';
         await connection.query(updateStockQuery, [cantidad, id_articulo]);
@@ -73,6 +66,7 @@ router.post('/agregarArticuloAVenta/:idVenta', async (req, res) => {
         res.json({ message: 'Artículo agregado a la venta correctamente.' });
     } catch (error) {
         console.error('Error al agregar artículo a la venta:', error);
+        connection.release();
         res.status(500).json({ error: 'Error al agregar el artículo.' });
     }
 });

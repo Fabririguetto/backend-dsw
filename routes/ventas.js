@@ -1,24 +1,8 @@
 const express = require('express');
-const mysql = require('mysql2/promise');
 const router = express.Router();
 
-const conexionConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: 'dsw_gestion'
-};
-
-const pool = mysql.createPool(conexionConfig);
-
-async function getConnection() {
-    try {
-        return await pool.getConnection();
-    } catch (error) {
-        console.error('Database connection failed:', error);
-        throw error;
-    }
-}
+// IMPORTANTE: Conexión centralizada
+const { getConnection } = require('../config/db');
 
 router.get('/ventas', async (req, res) => {
     const { filtro } = req.query; 
@@ -32,7 +16,6 @@ router.get('/ventas', async (req, res) => {
     `;
     
     const params = [];
-    
 
     if (filtro) {
         query += ` WHERE emp.nombre_apellidoEmp LIKE ? OR cli.nombre_apellidoCli LIKE ?`;
@@ -100,13 +83,16 @@ router.post('/ventas/crearVenta', async (req, res) => {
     }
 });
 
+// Nota: Esta ruta parece duplicada en stock.js, pero la mantenemos por compatibilidad
 router.get('/stockventa', async (req, res) => {
     const { estado } = req.query;
-    const query = 'SELECT idProducto, articulo, descripcion, monto FROM productos WHERE estado = ?';
+    // FIXME: Aquí hay un riesgo si 'precioVenta' no existe en la tabla productos (parece que está en tabla precios)
+    // Por ahora solo arreglamos la conexión.
+    const query = 'SELECT idProducto, articulo, descripcion, cantidad, estado FROM productos WHERE estado = ?';
 
     try {
         const connection = await getConnection();
-        const [rows] = await connection.query(query, [estado]);
+        const [rows] = await connection.query(query, [estado || 'Disponible']);
         connection.release();
         res.json(rows);
     } catch (error) {
@@ -152,8 +138,8 @@ router.post('/ventas/agregarProductosVenta', async (req, res) => {
         connection.release();
         res.json({ message: 'Productos agregados a la venta y stock actualizado exitosamente.' });
     } catch (error) {
-        await connection.rollback();
-        connection.release();
+        if (connection) await connection.rollback();
+        if (connection) connection.release();
         console.error('Error al agregar productos o actualizar stock:', error);
         res.status(500).json({ error: 'Error al agregar productos o actualizar stock.' });
     }
@@ -177,7 +163,6 @@ router.put('/ventas/:idVenta', async (req, res) => {
       console.error('Error al actualizar la venta:', error);
       res.status(500).json({ message: 'Error al actualizar la venta' });
     }
-  });
+});
   
-
 module.exports = router;

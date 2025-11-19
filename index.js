@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -8,12 +9,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 
+// Importar Rutas
 const productosRoutes = require('./routes/stock');
 const clientesRoutes = require('./routes/clientes');
 const sucursalesRoutes = require('./routes/sucursales');
 const ventasRoutes = require('./routes/ventas');
 const empleadosRoutes = require('./routes/empleados');
 
+// Registrar Rutas
 app.use(productosRoutes);
 app.use(clientesRoutes);
 app.use(sucursalesRoutes);
