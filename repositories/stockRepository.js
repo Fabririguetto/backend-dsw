@@ -41,11 +41,28 @@ class StockRepository {
         return rows[0].total;
     }
 
+    // --- NUEVOS MÉTODOS PARA LA VENTA ---
+
+    // Obtener stock actual (soporta transacción)
+    async getStockActual(id, connection = null) {
+        const conn = connection || await getConnection();
+        const [rows] = await conn.execute('SELECT cantidad FROM productos WHERE idProducto = ?', [id]);
+        if (!connection) conn.release();
+        return rows[0] ? rows[0].cantidad : 0;
+    }
+
+    // Descontar stock (soporta transacción)
+    async descontarStock(id, cantidad, connection) {
+        const query = 'UPDATE productos SET cantidad = cantidad - ? WHERE idProducto = ?';
+        await connection.execute(query, [cantidad, id]);
+    }
+
+    // -------------------------------------
+
     async create(data) {
         const connection = await getConnection();
         try {
             await connection.beginTransaction();
-            
             const queryProd = 'INSERT INTO productos (articulo, descripcion, cantidad, estado) VALUES (?, ?, ?, ?)';
             const [resProd] = await connection.execute(queryProd, [data.articulo, data.descripcion, data.cantidad, 'Alta']);
             
@@ -66,7 +83,6 @@ class StockRepository {
         const connection = await getConnection();
         try {
             await connection.beginTransaction();
-            
             const queryProd = 'UPDATE productos SET articulo = ?, descripcion = ?, cantidad = ? WHERE idProducto = ?';
             await connection.execute(queryProd, [data.articulo, data.descripcion, data.cantidad, id]);
             

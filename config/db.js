@@ -29,11 +29,11 @@ async function getConnection() {
 // Test de conexión al iniciar la app (Solo para verificar en consola)
 pool.getConnection()
     .then(connection => {
-        console.log('✅ Conectado exitosamente a la base de datos MySQL');
+        console.log('Base de datos conectada');
         connection.release();
     })
     .catch(error => {
-        console.error('❌ Error al conectar a la base de datos:', error.code);
+        console.error('Error al conectar a la base de datos:', error.code);
     });
 
 module.exports = {
