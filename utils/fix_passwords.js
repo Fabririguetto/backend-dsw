@@ -9,14 +9,12 @@ async function encriptarPasswords() {
         const passwordPlana = '123456';
         const saltRounds = 10;
         const passwordEncriptada = await bcrypt.hash(passwordPlana, saltRounds);
-        
-        console.log('Actualizando contraseñas...');
 
-        // Resetear claves de todos los empleados
         const query = 'UPDATE empleados SET password = ?'; 
+        
         const [result] = await connection.execute(query, [passwordEncriptada]);
 
-        console.log(`Proceso finalizado. Registros afectados: ${result.affectedRows}`);
+        console.log(`Se actualizaron ${result.affectedRows} empleados.`);
 
         connection.release();
         process.exit(); 
