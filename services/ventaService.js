@@ -12,41 +12,35 @@ class VentaService {
         return await ventaRepository.findDetalle(idVenta);
     }
 
-    // Lógica Transaccional: Venta + Detalles + Descuento Stock
     async crearNuevaVenta(ventaData) {
         const { montoTotal, DNIEmpleado, idCliente, productos } = ventaData;
         
+        // Validamos que el carrito tenga algun producto
         if (!productos || productos.length === 0) {
             throw new Error('La venta debe tener al menos un producto');
         }
 
         const connection = await getConnection();
-
+        // Iniciamos Transacción
         try {
-            // 1. Iniciamos Transacción (Todo o nada)
             await connection.beginTransaction();
-
-            // 2. Crear Cabecera de Venta
+            // Creamos la venta
             const idVenta = await ventaRepository.createVenta({
                 montoTotal,
                 DNIEmpleado,
                 idCliente
             }, connection);
-
-            // 3. Procesar cada producto
+            
             for (const prod of productos) {
                 const { idProducto, cantidadVendida, subtotal } = prod;
-
-                // a. Validar Stock
+                // Validamos stock 
                 const stockActual = await stockRepository.getStockActual(idProducto, connection);
                 if (stockActual < cantidadVendida) {
                     throw new Error(`Stock insuficiente para el producto ID ${idProducto}. Disponible: ${stockActual}`);
                 }
-
-                // b. Descontar Stock
+                // Descontamos Stock
                 await stockRepository.descontarStock(idProducto, cantidadVendida, connection);
 
-                // c. Guardar Detalle
                 await ventaRepository.createDetalle({
                     idVenta,
                     idProducto,
@@ -55,12 +49,12 @@ class VentaService {
                 }, connection);
             }
 
-            // 4. Si todo salió bien, confirmamos cambios
+            // Confirmamos cambios con un commit si todo salió bien
             await connection.commit();
             return idVenta;
 
         } catch (error) {
-            // 5. Si algo falló, deshacemos todo (Rollback)
+            // Si algo salió mal, hacemos un rollback para deshacer todo
             await connection.rollback();
             throw error;
         } finally {

@@ -1,4 +1,4 @@
-require('dotenv').config(); // Cargar variables de entorno
+require('dotenv').config(); //Cargamos Variables 
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -9,17 +9,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
 
-// --- IMPORTAR RUTAS ---
-const authRoutes = require('./routes/auth'); // <--- ¡ESTA ES LA QUE FALTABA!
+// Importamos Rutas
+const authRoutes = require('./routes/auth');
 const productosRoutes = require('./routes/stock');
 const clientesRoutes = require('./routes/clientes');
 const sucursalesRoutes = require('./routes/sucursales');
 const ventasRoutes = require('./routes/ventas');
 const empleadosRoutes = require('./routes/empleados');
-const cargaDetalleRoutes = require('./routes/cargadetalleventa'); // La de artículos
+const cargaDetalleRoutes = require('./routes/cargadetalleventa');
 
-// --- REGISTRAR RUTAS ---
-app.use(authRoutes); // <--- ¡IMPORTANTE! Habilitar el login
+// Registramos Rutas
+app.use(authRoutes);
 app.use(productosRoutes);
 app.use(clientesRoutes);
 app.use(sucursalesRoutes);

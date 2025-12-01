@@ -5,13 +5,12 @@ async function encriptarPasswords() {
     try {
         const connection = await getConnection();
         
-        // Generar hash de '123456'
         const passwordPlana = '123456';
         const saltRounds = 10;
         const passwordEncriptada = await bcrypt.hash(passwordPlana, saltRounds);
 
+        //Acualizamos todos los empleados
         const query = 'UPDATE empleados SET password = ?'; 
-        
         const [result] = await connection.execute(query, [passwordEncriptada]);
 
         console.log(`Se actualizaron ${result.affectedRows} empleados.`);

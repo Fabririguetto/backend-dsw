@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const clienteController = require('../controllers/clienteController');
 
-// Rutas mapeadas al Controlador
 router.get('/clientes', clienteController.getAll);
 router.get('/clientesventa/:dni', clienteController.getByDni);
 router.post('/clientes', clienteController.create);
