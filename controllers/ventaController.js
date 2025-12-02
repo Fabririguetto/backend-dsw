@@ -2,10 +2,25 @@ const ventaService = require('../services/ventaService');
 
 class VentaController {
 
-    async getAll(req, res) {
+async getAll(req, res) {
         try {
-            const ventas = await ventaService.obtenerVentas(req.query.filtro);
-            res.json(ventas);
+            const { filtro = '', limite = 20, pagina = 0 } = req.query;
+            
+            const limitValue = parseInt(limite) || 20;
+            const offsetValue = (parseInt(pagina) || 0) * limitValue;
+
+            const resultado = await ventaService.obtenerVentas({
+                filtro, 
+                limit: limitValue, 
+                offset: offsetValue
+            });
+
+            res.json({
+                ventas: resultado.rows, 
+                totalVentas: resultado.count, 
+                totalPages: Math.ceil(resultado.count / limitValue) 
+            });
+
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Error al obtener ventas' });
