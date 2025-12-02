@@ -2,27 +2,36 @@ const { getConnection } = require('../config/db');
 
 class VentaRepository {
 
-    async findAll(filtro) {
+    async findAll({ limit, offset, filtro }) {
         const connection = await getConnection();
+        
         let query = `
-            SELECT ven.idVenta, ven.montoTotal, emp.nombre_apellidoEmp, cli.nombre_apellidoCli, 
-                DATE_FORMAT(ven.fechaHoraVenta, '%Y-%m-%d %H:%i:%s') AS fechaHoraVenta
+            SELECT ven.idVenta, ven.montoTotal, emp.nombre_apellidoEmp, cli.nombre_apellidoCli,
+            DATE_FORMAT(ven.fechaHoraVenta, '%Y-%m-%d %H:%i:%s') AS fechaHoraVenta
             FROM ventas ven
             INNER JOIN empleados emp ON ven.DNIEmpleado = emp.DNI_CUIL
-            INNER JOIN clientes cli ON ven.idCliente = cli.idCliente
-        `;
+            INNER JOIN clientes cli ON ven.idCliente = cli.idCliente`;
         const params = [];
 
-        if (filtro) {
+        if (filtro && filtro !== 'undefined') {
             query += ` WHERE emp.nombre_apellidoEmp LIKE ? OR cli.nombre_apellidoCli LIKE ?`;
             params.push(`%${filtro}%`, `%${filtro}%`);
         }
 
-        query += ` ORDER BY ven.fechaHoraVenta DESC`;
+        query += ` ORDER BY ven.idVenta DESC`;
+        
+        const safeLimit = Number(limit) || 20;
+        const safeOffset = Number(offset) || 0;
+        query += ` LIMIT ${safeLimit} OFFSET ${safeOffset}`;
 
         const [rows] = await connection.execute(query, params);
+        
+        const [countRows] = await connection.execute("SELECT COUNT(*) as total FROM ventas");
+        const total = countRows[0].total;
+
         connection.release();
-        return rows;
+        
+        return { ventas: rows, total };
     }
 
     async findDetalle(idVenta) {
@@ -38,14 +47,12 @@ class VentaRepository {
         return rows;
     }
 
-    // Recibe la conexión de la transacción para insertar la cabecera
     async createVenta(data, connection) {
         const query = 'INSERT INTO ventas (montoTotal, DNIEmpleado, idCliente, fechaHoraVenta) VALUES (?, ?, ?, ?)';
         const [result] = await connection.execute(query, [data.montoTotal, data.DNIEmpleado, data.idCliente, new Date()]);
         return result.insertId;
     }
 
-    // Recibe la conexión de la transacción para insertar un detalle
     async createDetalle(data, connection) {
         const query = 'INSERT INTO productoventa (idVenta, idProducto, cantidadVendida, subtotal) VALUES (?, ?, ?, ?)';
         await connection.execute(query, [data.idVenta, data.idProducto, data.cantidadVendida, data.subtotal]);
