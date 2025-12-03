@@ -1,15 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const stockController = require('../controllers/stockController');
+// const { verificarToken } = require('../middleware/authMiddleware'); // Asumiendo que esta línea existe
 
-// Rutas mapeadas al Controlador
-router.get('/stock', stockController.getAll);
+// Rutas de STOCK (prefijo: /stock)
 
-// Reutilizamos el método getAll para la venta, ya que filtra y busca igual
-router.get('/stockventa', stockController.getAll); 
+// GET /stock: Listar productos con paginación/búsqueda
+router.get('/', stockController.getAll);
 
-router.post('/stock', stockController.create);
-router.put('/stock/:id', stockController.update);
-router.put('/stockelim/:id', stockController.delete); // Eliminar lógico (cambio de estado)
+// POST /stock: Crear nuevo producto
+router.post('/', stockController.create);
+
+// PUT /stock/:id: Actualizar un producto existente (Línea 13 de tu error)
+router.put('/:id', stockController.update); 
+
+// Rutas de STOCKELIM (prefijo: /stockelim)
+// PUT /stockelim/:id: Cambiar estado (Borrado Lógico)
+// NOTA: En index.js, esto se mapea con app.use('/stockelim', stockRoutes);
+router.put('/:id', stockController.updateEstado); 
 
 module.exports = router;

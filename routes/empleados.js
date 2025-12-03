@@ -3,8 +3,8 @@ const router = express.Router();
 const empleadoController = require('../controllers/empleadoController');
 
 // Rutas mapeadas al Controlador
-router.get('/empleados', empleadoController.getAll);
-router.post('/empleados', empleadoController.create);
-router.put('/empleados/:id', empleadoController.update);
+router.get('/', empleadoController.getAll);
+router.post('/', empleadoController.create);
+router.put('/:id', empleadoController.update);
 
 module.exports = router;

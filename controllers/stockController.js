@@ -7,7 +7,7 @@ class StockController {
             const { producto = '', limite = 20, pagina = 0 } = req.query;
             const limitValue = parseInt(limite) || 20;
             const offsetValue = (parseInt(pagina) || 0) * limitValue;
-
+            
             const [productos, total] = await Promise.all([
                 stockRepository.findAll({ limit: limitValue, offset: offsetValue, search: producto }),
                 stockRepository.countAll(producto)
@@ -19,39 +19,75 @@ class StockController {
                 totalPages: Math.ceil(total / limitValue)
             });
         } catch (error) {
-            console.error(error);
+            console.error('Error al obtener stock:', error);
             res.status(500).json({ error: 'Error al obtener stock' });
         }
     }
 
+    // MÉTODO REQUERIDO POR POST /stock
     async create(req, res) {
+        const { articulo, descripcion, cantidad, monto } = req.body;
+        
+        if (!articulo || !descripcion || !cantidad || !monto) {
+            return res.status(400).json({ error: 'Datos incompletos para crear producto' });
+        }
+        
         try {
-            const id = await stockRepository.create(req.body);
-            res.status(201).json({ message: 'Producto creado', id });
+            await stockRepository.create(req.body);
+            res.status(201).json({ message: 'Producto creado' });
         } catch (error) {
-            console.error(error);
+            console.error('Error al crear producto:', error);
             res.status(500).json({ error: 'Error al crear producto' });
         }
     }
 
+    // MÉTODO REQUERIDO POR PUT /stock/:id (LÍNEA 13 en routes/stock.js)
     async update(req, res) {
+        const { id } = req.params;
+        const dataToUpdate = req.body;
+
+        // Limpieza de datos (convierte '' y null a null para mysql2)
+        const sanitizedData = Object.keys(dataToUpdate).reduce((acc, key) => {
+            const value = dataToUpdate[key];
+            if (value !== undefined) {
+                // Conversión a null para campos numéricos vacíos
+                if ((key === 'cantidad' || key === 'monto') && (value === '' || value === null)) {
+                    acc[key] = null;
+                } else {
+                    acc[key] = value;
+                }
+            }
+            return acc;
+        }, {});
+        
+        if (Object.keys(sanitizedData).length === 0) {
+            return res.status(400).json({ error: 'No se proporcionaron datos válidos para actualizar.' });
+        }
+
         try {
-            await stockRepository.update(req.params.id, req.body);
+            await stockRepository.update(id, sanitizedData); 
             res.json({ message: 'Producto actualizado' });
         } catch (error) {
-            console.error(error);
+            console.error('Error al actualizar producto:', error);
             res.status(500).json({ error: 'Error al actualizar producto' });
         }
     }
 
-    async delete(req, res) {
+    // MÉTODO REQUERIDO POR PUT /stockelim/:id
+    async updateEstado(req, res) {
+        const { id } = req.params;
+        const { estado } = req.body; 
+
+        if (!estado) {
+            return res.status(400).json({ error: 'El estado es obligatorio.' });
+        }
+
         try {
-            const nuevoEstado = req.body.estado === 'Alta' ? 'Baja' : 'Alta';
-            const success = await stockRepository.updateEstado(req.params.id, nuevoEstado);
-            if (success) res.json({ message: 'Estado actualizado', nuevoEstado });
-            else res.status(404).json({ error: 'Producto no encontrado' });
+            await stockRepository.updateEstado(id, estado);
+            res.json({ message: `Estado del producto ${id} actualizado a ${estado}.` });
         } catch (error) {
-            res.status(500).json({ error: 'Error al cambiar estado' });
+            console.error('Error al cambiar el estado del producto:', error);
+            res.status(500).json({ error: 'Error al cambiar el estado del producto.' });
         }
     }
 }

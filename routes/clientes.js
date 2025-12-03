@@ -3,9 +3,9 @@ const router = express.Router();
 const clienteController = require('../controllers/clienteController');
 
 // Rutas mapeadas al Controlador
-router.get('/clientes', clienteController.getAll);
-router.get('/clientesventa/:dni', clienteController.getByDni);
-router.post('/clientes', clienteController.create);
-router.put('/clientes/:id', clienteController.update);
+router.get('/', clienteController.getAll);
+router.get('/:dni', clienteController.getByDni);
+router.post('/', clienteController.create);
+router.put('/:id', clienteController.update);
 
 module.exports = router;

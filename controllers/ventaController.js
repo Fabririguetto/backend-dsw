@@ -17,8 +17,6 @@ class VentaController {
                 filtro 
             });
 
-            // Enviamos el objeto completo { ventas: [...], total: 150 }
-            // para que el frontend pueda calcular las páginas.
             res.json(resultado);
 
         } catch (error) {
@@ -27,7 +25,6 @@ class VentaController {
         }
     }
     
-    // ... (El resto de los métodos getDetalle y create quedan igual)
     async getDetalle(req, res) {
         try {
             const detalles = await ventaService.obtenerDetalle(req.params.idVenta);

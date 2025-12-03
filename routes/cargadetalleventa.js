@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const stockController = require('../controllers/stockController');
+const ventaController = require('../controllers/ventaController'); 
 
-// Reutilizamos el controlador de stock para listar artículos disponibles
-router.get('/articulos', stockController.getAll);
+router.get('/:idVenta', ventaController.getDetalle); 
 
 module.exports = router;
