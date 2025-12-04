@@ -18,6 +18,8 @@
 --
 -- Table structure for table `clientes`
 --
+CREATE database if not exists `dsw_gestion` ;
+
 
 DROP TABLE IF EXISTS `clientes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
