@@ -41,7 +41,6 @@ class StockRepository {
         return rows[0].total;
     }
 
-    // --- MÉTODOS DE VENTA (asumo que están bien) ---
     async getStockActual(id, connection = null) {
         const conn = connection || await getConnection();
         const [rows] = await conn.execute('SELECT cantidad FROM productos WHERE idProducto = ?', [id]);
@@ -53,8 +52,6 @@ class StockRepository {
         const query = 'UPDATE productos SET cantidad = cantidad - ? WHERE idProducto = ?';
         await connection.execute(query, [cantidad, id]);
     }
-
-    // ------------------------------------------------
 
     async create(data) {
         const connection = await getConnection();
@@ -76,28 +73,21 @@ class StockRepository {
         }
     }
 
-    // MÉTODO 'update' (Línea 87 en tu traza) - CORRECCIÓN APLICADA
     async update(id, data) {
         const connection = await getConnection();
         try {
             await connection.beginTransaction();
             
-            // 1. Separar campos de productos
             const productFields = {};
-            // El controller ya debería haber sanitizado los valores, 
-            // pero si una clave existe con valor undefined, el filtro abajo lo atrapará.
             if (data.articulo !== undefined) productFields.articulo = data.articulo;
             if (data.descripcion !== undefined) productFields.descripcion = data.descripcion;
             if (data.cantidad !== undefined) productFields.cantidad = data.cantidad;
             if (data.estado !== undefined) productFields.estado = data.estado; 
 
-            // Si hay campos para actualizar en productos
             if (Object.keys(productFields).length > 0) {
                 const prodSets = Object.keys(productFields).map(key => `${key} = ?`).join(', ');
                 let prodValues = Object.values(productFields);
                 
-                // BARRERA DE SEGURIDAD: Aseguramos que no haya ningún 'undefined' residual
-                // El error Bind parameters ocurre aquí si un valor es undefined.
                 prodValues = prodValues.filter(val => val !== undefined);
                 
                 if (prodSets.length > 0 && prodValues.length > 0) {
@@ -106,9 +96,7 @@ class StockRepository {
                 }
             }
 
-            // 2. Insertar nuevo precio si el monto fue modificado
             if (data.monto !== undefined) {
-                // Aquí solo comprobamos que no sea undefined, ya que el controller lo convirtió a null si estaba vacío.
                 const queryPrecio = 'INSERT INTO precios (idProducto, fechaHora, monto) VALUES (?, ?, ?)';
                 await connection.execute(queryPrecio, [id, new Date(), data.monto]);
             }
@@ -125,7 +113,6 @@ class StockRepository {
 
     async updateEstado(id, nuevoEstado) {
         const connection = await getConnection();
-        // NOTA: Esta función en el repositorio solo recibe el nuevoEstado como string.
         const [result] = await connection.execute('UPDATE productos SET estado = ? WHERE idProducto = ?', [nuevoEstado, id]);
         connection.release();
         return result.affectedRows > 0;

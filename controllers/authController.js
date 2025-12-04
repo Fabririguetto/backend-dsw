@@ -33,16 +33,11 @@ class AuthController {
 
             const user = rows[0];
 
-            // if (!passwordMatch) {
-            // return res.status(401).json({ error: 'Usuario o contraseña incorrectos.' });
-            // }
-            // Comparar contraseña encriptada
             const passwordMatch = await bcrypt.compare(password, user.password);
             if (!passwordMatch) {
                 return res.status(401).json({ error: 'Usuario o contraseña incorrectos.' });
             }
 
-            // Crear token JWT
             const token = jwt.sign(
                 {
                     dni: user.DNI_CUIL,
@@ -68,7 +63,6 @@ class AuthController {
             console.error('Error en login:', error);
             return res.status(500).json({ error: 'Error interno del servidor.' });
         } finally {
-            // Liberar la conexión SIEMPRE
             if (connection) connection.release();
         }
     }
@@ -81,12 +75,10 @@ class AuthController {
 
     let connection;
     try {
-        // 1. Encriptar la nueva contraseña
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
 
-        // 2. Conectar y Actualizar Directamente
-        connection = await getConnection(); // Tu función de conexión
+        connection = await getConnection();
         const [result] = await connection.execute(
             'UPDATE empleados SET password = ? WHERE email = ?',
             [hashedPassword, email]

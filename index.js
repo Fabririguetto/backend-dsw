@@ -1,30 +1,23 @@
 const express = require('express');
 const cors = require('cors');
-// Importar dotenv al inicio
 require('dotenv').config();
 
-// Importaciones necesarias para cargar archivos de forma segura
 const fs = require('fs');
 const path = require('path');
 
-// Swagger imports
 const swaggerUi = require('swagger-ui-express');
 
-// Usar try/catch para cargar swagger.json de forma explícita
 let swaggerDocument = {};
 try {
-    // CORRECCIÓN CLAVE: Usamos path.join para subir un nivel (..) y buscar 'swagger.json'.
     const swaggerPath = path.join(__dirname, '.', 'swagger.json');
     const swaggerFileContent = fs.readFileSync(swaggerPath, 'utf8');
     
-    // Intentamos parsear el contenido
     swaggerDocument = JSON.parse(swaggerFileContent);
     
 } catch (error) {
     console.error("=================================================================");
     console.error("ERROR CRÍTICO: No se pudo cargar o parsear swagger.json.");
     console.error("Detalle del error:", error.message);
-    // Mensaje de ayuda para el usuario
     console.error("Asegúrate de que 'swagger.json' esté en la carpeta 'backend-dsw'.");
     console.error("=================================================================");
 }
@@ -37,17 +30,13 @@ const clienteRoutes = require('./routes/clientes');
 const empleadoRoutes = require('./routes/empleados');
 const sucursalRoutes = require('./routes/sucursales');
 const detalleVentaRoutes = require('./routes/cargadetalleventa');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 const app = express();
 
-// Middleware CORS y JSON
 app.use(cors());
 app.use(express.json());
 
-// ===================================================
-// CONFIGURACIÓN SWAGGER/API-DOCS
-// La documentación estará accesible en http://localhost:3500/api-docs
-// ===================================================
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Rutas de la API
@@ -59,6 +48,7 @@ app.use('/clientes', clienteRoutes);
 app.use('/empleados', empleadoRoutes);
 app.use('/sucursales', sucursalRoutes);
 app.use('/detalle_ventas', detalleVentaRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 const PORT = process.env.PORT || 3500;
 app.listen(PORT, () => {

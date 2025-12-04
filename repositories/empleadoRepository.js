@@ -5,8 +5,8 @@ class EmpleadoRepository {
     async findAll(search) {
         const connection = await getConnection();
         let query = `SELECT emp.DNI_CUIL, emp.nombre_apellidoEmp, emp.contacto, suc.nombreSucursal, suc.idSucursal 
-                     FROM empleados emp 
-                     INNER JOIN sucursales suc ON emp.idSucursal = suc.idSucursal`;
+                    FROM empleados emp 
+                    INNER JOIN sucursales suc ON emp.idSucursal = suc.idSucursal`;
         const params = [];
 
         if (search) {
