@@ -13,12 +13,31 @@ class EmpleadoController {
     }
 
     async create(req, res) {
-        const { DNI_CUIL, nombre_apellidoEmp, contacto, sucursal } = req.body;
-        if (!DNI_CUIL || !nombre_apellidoEmp || !contacto || !sucursal) {
+        const { 
+            DNI_CUIL, 
+            nombre_apellidoEmp, 
+            contacto, 
+            sucursal, 
+            email, 
+            password, 
+            idrol    // <--- ahora viene el ID del rol
+        } = req.body;
+
+        if (!DNI_CUIL || !nombre_apellidoEmp || !contacto || !sucursal || !email || !password || !idrol) {
             return res.status(400).json({ error: 'Datos incompletos' });
         }
+
         try {
-            await empleadoRepository.create(req.body);
+            await empleadoRepository.create({
+                DNI_CUIL,
+                nombre_apellidoEmp,
+                contacto,
+                sucursal,
+                email,
+                password,
+                idrol     // <--- se guarda como FK
+            });
+
             res.status(201).json({ message: 'Empleado creado' });
         } catch (error) {
             console.error(error);
@@ -28,6 +47,7 @@ class EmpleadoController {
 
     async update(req, res) {
         const { id } = req.params;
+
         try {
             await empleadoRepository.update(id, req.body);
             res.json({ message: 'Empleado actualizado' });

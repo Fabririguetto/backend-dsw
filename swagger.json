@@ -3,7 +3,7 @@
   "info": {
     "title": "API Gestión DSW",
     "version": "1.0.0",
-    "description": "Documentación de la API para el sistema de gestión de ventas, stock y empleados."
+    "description": "API del sistema de gestión de ventas, stock, empleados, clientes y autenticación."
   },
   "servers": [
     {
@@ -18,19 +18,42 @@
         "scheme": "bearer",
         "bearerFormat": "JWT"
       }
+    },
+    "schemas": {
+      "Empleado": {
+        "type": "object",
+        "properties": {
+          "DNI_CUIL": { "type": "string" },
+          "nombre_apellidoEmp": { "type": "string" },
+          "contacto": { "type": "string" },
+          "sucursal": { "type": "integer" },
+          "email": { "type": "string" },
+          "password": { "type": "string" },
+          "idrol": { "type": "integer" }
+        }
+      },
+      "Producto": {
+        "type": "object",
+        "properties": {
+          "articulo": { "type": "string" },
+          "descripcion": { "type": "string" },
+          "cantidad": { "type": "integer" },
+          "monto": { "type": "number" }
+        }
+      }
     }
   },
+
   "security": [
-    {
-      "bearerAuth": []
-    }
+    { "bearerAuth": [] }
   ],
+
   "paths": {
     "/auth/login": {
       "post": {
         "summary": "Iniciar sesión",
-        "security": [],
         "tags": ["Autenticación"],
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -38,8 +61,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": { "type": "string", "example": "usuario" },
-                  "password": { "type": "string", "example": "pass" }
+                  "email": { "type": "string", "example": "user@test.com" },
+                  "password": { "type": "string", "example": "123456" }
                 }
               }
             }
@@ -51,11 +74,12 @@
         }
       }
     },
+
     "/auth/reset-direct": {
       "post": {
-        "summary": "Restablecer contraseña (Directo)",
-        "security": [],
+        "summary": "Restablecer contraseña directamente",
         "tags": ["Autenticación"],
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -76,9 +100,10 @@
         }
       }
     },
+
     "/ventas": {
       "get": {
-        "summary": "Obtener historial de ventas paginado",
+        "summary": "Obtener historial de ventas",
         "tags": ["Ventas"],
         "parameters": [
           { "name": "filtro", "in": "query", "schema": { "type": "string" } },
@@ -86,13 +111,14 @@
           { "name": "limite", "in": "query", "schema": { "type": "integer", "default": 20 } }
         ],
         "responses": {
-          "200": { "description": "Lista de ventas y paginación" }
+          "200": { "description": "Lista de ventas paginada" }
         }
       }
     },
+
     "/ventas/crearVenta": {
       "post": {
-        "summary": "Registrar una nueva venta",
+        "summary": "Registrar nueva venta",
         "tags": ["Ventas"],
         "requestBody": {
           "required": true,
@@ -125,24 +151,26 @@
         }
       }
     },
+
     "/detalle_ventas/{idVenta}": {
       "get": {
-        "summary": "Obtener detalle de una venta",
+        "summary": "Detalle de una venta",
         "tags": ["Ventas"],
         "parameters": [
           { "name": "idVenta", "in": "path", "required": true, "schema": { "type": "integer" } }
         ],
         "responses": {
-          "200": { "description": "Detalle de productos de la venta" }
+          "200": { "description": "Detalle de productos vendidos" }
         }
       }
     },
+
     "/stock": {
       "get": {
-        "summary": "Obtener lista de productos (Stock)",
+        "summary": "Listar productos del stock",
         "tags": ["Stock"],
         "parameters": [
-          { "name": "producto", "in": "query", "description": "Nombre del producto a buscar", "schema": { "type": "string" } },
+          { "name": "producto", "in": "query", "schema": { "type": "string" } },
           { "name": "pagina", "in": "query", "schema": { "type": "integer" } },
           { "name": "limite", "in": "query", "schema": { "type": "integer" } }
         ],
@@ -151,20 +179,12 @@
         }
       },
       "post": {
-        "summary": "Crear nuevo producto",
+        "summary": "Crear producto",
         "tags": ["Stock"],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "articulo": { "type": "string" },
-                  "descripcion": { "type": "string" },
-                  "cantidad": { "type": "integer" },
-                  "monto": { "type": "number" }
-                }
-              }
+              "schema": { "$ref": "#/components/schemas/Producto" }
             }
           }
         },
@@ -173,6 +193,7 @@
         }
       }
     },
+
     "/stock/{id}": {
       "put": {
         "summary": "Actualizar producto",
@@ -183,15 +204,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "articulo": { "type": "string" },
-                  "descripcion": { "type": "string" },
-                  "cantidad": { "type": "integer" },
-                  "monto": { "type": "number" }
-                }
-              }
+              "schema": { "$ref": "#/components/schemas/Producto" }
             }
           }
         },
@@ -200,9 +213,10 @@
         }
       }
     },
+
     "/stockelim/{id}": {
       "put": {
-        "summary": "Cambiar estado de producto (Borrado lógico)",
+        "summary": "Cambiar estado del producto (borrado lógico)",
         "tags": ["Stock"],
         "parameters": [
           { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
@@ -220,10 +234,11 @@
           }
         },
         "responses": {
-          "200": { "description": "Estado cambiado" }
+          "200": { "description": "Estado actualizado" }
         }
       }
     },
+
     "/clientes": {
       "get": {
         "summary": "Listar clientes",
@@ -258,6 +273,7 @@
         }
       }
     },
+
     "/empleados": {
       "get": {
         "summary": "Listar empleados",
@@ -275,15 +291,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "DNI_CUIL": { "type": "string" },
-                  "nombre_apellidoEmp": { "type": "string" },
-                  "contacto": { "type": "string" },
-                  "sucursal": { "type": "integer" }
-                }
-              }
+              "schema": { "$ref": "#/components/schemas/Empleado" }
             }
           }
         },
@@ -292,6 +300,7 @@
         }
       }
     },
+
     "/sucursales": {
       "get": {
         "summary": "Listar sucursales",
