@@ -5,7 +5,7 @@ const mysql = require('mysql2/promise');
 const conexionConfig = {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '', // Si en .env está vacío, usa ''
+    password: process.env.DB_PASSWORD || 'root', // Si en .env está vacío, usa ''
     database: process.env.DB_NAME || 'dsw_gestion',
     waitForConnections: true,
     connectionLimit: 10,
