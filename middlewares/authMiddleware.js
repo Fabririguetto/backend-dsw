@@ -4,7 +4,6 @@ const verifyToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     
     if (!authHeader) {
-        // En modo desarrollo dejamos pasar:
         return next(); 
     }
 

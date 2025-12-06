@@ -20,7 +20,7 @@ class EmpleadoController {
             sucursal, 
             email, 
             password, 
-            idrol    // <--- ahora viene el ID del rol
+            idrol
         } = req.body;
 
         if (!DNI_CUIL || !nombre_apellidoEmp || !contacto || !sucursal || !email || !password || !idrol) {
@@ -35,7 +35,7 @@ class EmpleadoController {
                 sucursal,
                 email,
                 password,
-                idrol     // <--- se guarda como FK
+                idrol
             });
 
             res.status(201).json({ message: 'Empleado creado' });

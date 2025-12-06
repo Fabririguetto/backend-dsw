@@ -1,4 +1,5 @@
 const { getConnection } = require('../config/db');
+const bcrypt = require('bcrypt');
 
 class EmpleadoRepository {
 
@@ -33,55 +34,69 @@ class EmpleadoRepository {
         return rows;
     }
 
-    async create(data) {
-        const connection = await getConnection();
+async create(data) {
+    const connection = await getConnection();
 
-        const query = `
-            INSERT INTO empleados 
-                (DNI_CUIL, nombre_apellidoEmp, contacto, idSucursal, email, password, idrol)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        `;
+    // Encriptar la contraseña antes de insertarla
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(data.password, saltRounds);
 
-        const [result] = await connection.execute(query, [
-            data.DNI_CUIL,
-            data.nombre_apellidoEmp,
-            data.contacto,
-            data.sucursal,
-            data.email,
-            data.password, 
-            data.idrol
-        ]);
+    const query = `
+        INSERT INTO empleados 
+            (DNI_CUIL, nombre_apellidoEmp, contacto, idSucursal, email, password, idrol)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
 
-        connection.release();
-        return result;
+    const [result] = await connection.execute(query, [
+        data.DNI_CUIL,
+        data.nombre_apellidoEmp,
+        data.contacto,
+        data.sucursal,
+        data.email,
+        hashedPassword, // <-- usar el hash
+        data.idrol
+    ]);
+
+    connection.release();
+    return result;
+}
+
+async update(id, data) {
+    const connection = await getConnection();
+
+    let query = `
+        UPDATE empleados 
+        SET 
+            nombre_apellidoEmp = ?, 
+            contacto = ?, 
+            idSucursal = ?,
+            email = ?,
+            idrol = ?
+    `;
+    
+    const params = [
+        data.nombre_apellidoEmp,
+        data.contacto,
+        data.sucursal,
+        data.email,
+        data.rol
+    ];
+
+    if (data.password) {
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(data.password, saltRounds);
+        query += `, password = ?`;
+        params.push(hashedPassword);
     }
 
-    async update(id, data) {
-        const connection = await getConnection();
+    query += ` WHERE DNI_CUIL = ?`;
+    params.push(id);
 
-        const query = `
-            UPDATE empleados 
-            SET 
-                nombre_apellidoEmp = ?, 
-                contacto = ?, 
-                idSucursal = ?,
-                email = ?,
-                idrol = ?
-            WHERE DNI_CUIL = ?
-        `;
+    const [result] = await connection.execute(query, params);
+    connection.release();
+    return result;
+}
 
-        const [result] = await connection.execute(query, [
-            data.nombre_apellidoEmp,
-            data.contacto,
-            data.sucursal,
-            data.email,
-            data.idrol,
-            id
-        ]);
-
-        connection.release();
-        return result;
-    }
 }
 
 module.exports = new EmpleadoRepository();

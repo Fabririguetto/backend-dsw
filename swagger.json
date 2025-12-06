@@ -23,44 +23,239 @@
       "Empleado": {
         "type": "object",
         "properties": {
-          "DNI_CUIL": { "type": "string" },
-          "nombre_apellidoEmp": { "type": "string" },
-          "contacto": { "type": "string" },
-          "sucursal": { "type": "integer" },
-          "email": { "type": "string" },
-          "password": { "type": "string" },
-          "idrol": { "type": "integer" }
+          "id": {
+            "type": "integer",
+            "description": "ID del empleado (solo lectura)",
+            "readOnly": true,
+            "example": 101
+          },
+          "DNI_CUIL": {
+            "type": "string",
+            "example": "20-35678910-5"
+          },
+          "nombre_apellidoEmp": {
+            "type": "string",
+            "example": "Juan Pérez"
+          },
+          "contacto": {
+            "type": "string",
+            "example": "+54 9 341 1234567"
+          },
+          "sucursal": {
+            "type": "integer",
+            "description": "ID de la sucursal"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "juan.perez@empresa.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "Contraseña (generalmente solo en creación/actualización)"
+          },
+          "idrol": {
+            "type": "integer",
+            "description": "ID del rol (ej: 2)"
+          }
+        },
+        "required": [
+          "DNI_CUIL",
+          "nombre_apellidoEmp",
+          "contacto",
+          "sucursal",
+          "email",
+          "password",
+          "idrol"
+        ]
+      },
+      "EmpleadoCreacion": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Empleado"
+          },
+          {
+            "properties": {
+              "id": {
+                "type": "integer",
+                "readOnly": false
+              }
+            }
+          }
+        ]
+      },
+      "EmpleadoUpdate": {
+        "type": "object",
+        "description": "Campos opcionales para la actualización de un empleado.",
+        "properties": {
+          "DNI_CUIL": {
+            "type": "string",
+            "example": "20-35678910-5"
+          },
+          "nombre_apellidoEmp": {
+            "type": "string",
+            "example": "Juan Pérez Actualizado"
+          },
+          "contacto": {
+            "type": "string",
+            "example": "+54 9 341 9876543"
+          },
+          "sucursal": {
+            "type": "integer"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "nuevo.email@empresa.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "description": "Nueva contraseña (opcional)"
+          },
+          "idrol": {
+            "type": "integer",
+            "example": 3
+          }
         }
       },
       "Producto": {
         "type": "object",
         "properties": {
-          "articulo": { "type": "string" },
-          "descripcion": { "type": "string" },
-          "cantidad": { "type": "integer" },
-          "monto": { "type": "number" }
+          "idProducto": {
+            "type": "integer",
+            "readOnly": true,
+            "description": "ID del producto"
+          },
+          "articulo": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "cantidad": {
+            "type": "integer"
+          },
+          "monto": {
+            "type": "number",
+            "format": "float"
+          }
         }
       },
       "Rol": {
         "type": "object",
         "properties": {
-          "idrol": { "type": "integer", "description": "ID único del rol." },
-          "rol": { "type": "string", "description": "Nombre del rol (ej: admin, vendedor)." }
+          "idrol": {
+            "type": "integer",
+            "description": "ID único del rol.",
+            "readOnly": true
+          },
+          "rol": {
+            "type": "string",
+            "description": "Nombre del rol (ej: admin, vendedor)."
+          }
         },
-        "required": ["idrol", "rol"]
+        "required": [
+          "rol"
+        ]
+      },
+      "Cliente": {
+        "type": "object",
+        "properties": {
+          "idCliente": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "dni": {
+            "type": "string"
+          },
+          "nombre_apellidoCli": {
+            "type": "string"
+          },
+          "direccion": {
+            "type": "string"
+          },
+          "contacto": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "dni",
+          "nombre_apellidoCli",
+          "contacto"
+        ]
+      },
+      "VentaDetalle": {
+        "type": "object",
+        "properties": {
+          "idVenta": {
+            "type": "integer"
+          },
+          "montoTotal": {
+            "type": "number",
+            "format": "float"
+          },
+          "DNIEmpleado": {
+            "type": "string"
+          },
+          "idCliente": {
+            "type": "integer"
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "productos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "idProducto": {
+                  "type": "integer"
+                },
+                "cantidadVendida": {
+                  "type": "integer"
+                },
+                "subtotal": {
+                  "type": "number",
+                  "format": "float"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Sucursal": {
+        "type": "object",
+        "properties": {
+          "idSucursal": {
+            "type": "integer",
+            "readOnly": true
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "direccion": {
+            "type": "string"
+          }
+        }
       }
     }
   },
-
   "security": [
-    { "bearerAuth": [] }
+    {
+      "bearerAuth": []
+    }
   ],
-
   "paths": {
     "/auth/login": {
       "post": {
         "summary": "Iniciar sesión",
-        "tags": ["Autenticación"],
+        "tags": [
+          "Autenticación"
+        ],
         "security": [],
         "requestBody": {
           "required": true,
@@ -69,24 +264,47 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": { "type": "string", "example": "user@test.com" },
-                  "password": { "type": "string", "example": "123456" }
+                  "email": {
+                    "type": "string",
+                    "example": "user@test.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "123456"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Login exitoso, devuelve token" },
-          "401": { "description": "Credenciales incorrectas" }
+          "200": {
+            "description": "Login exitoso, devuelve token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales incorrectas"
+          }
         }
       }
     },
-
     "/auth/reset-direct": {
       "post": {
         "summary": "Restablecer contraseña directamente",
-        "tags": ["Autenticación"],
+        "tags": [
+          "Autenticación"
+        ],
         "security": [],
         "requestBody": {
           "required": true,
@@ -95,39 +313,81 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": { "type": "string" },
-                  "newPassword": { "type": "string" }
+                  "email": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Contraseña actualizada" },
-          "404": { "description": "Usuario no encontrado" }
+          "200": {
+            "description": "Contraseña actualizada"
+          },
+          "404": {
+            "description": "Usuario no encontrado"
+          }
         }
       }
     },
-
     "/ventas": {
       "get": {
         "summary": "Obtener historial de ventas",
-        "tags": ["Ventas"],
+        "tags": [
+          "Ventas"
+        ],
         "parameters": [
-          { "name": "filtro", "in": "query", "schema": { "type": "string" } },
-          { "name": "pagina", "in": "query", "schema": { "type": "integer", "default": 0 } },
-          { "name": "limite", "in": "query", "schema": { "type": "integer", "default": 20 } }
+          {
+            "name": "filtro",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 20
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Lista de ventas paginada" }
+          "200": {
+            "description": "Lista de ventas paginada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VentaDetalle"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
-
     "/ventas/crearVenta": {
       "post": {
         "summary": "Registrar nueva venta",
-        "tags": ["Ventas"],
+        "tags": [
+          "Ventas"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -135,17 +395,29 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "montoTotal": { "type": "number" },
-                  "DNIEmpleado": { "type": "string" },
-                  "idCliente": { "type": "integer" },
+                  "montoTotal": {
+                    "type": "number"
+                  },
+                  "DNIEmpleado": {
+                    "type": "string"
+                  },
+                  "idCliente": {
+                    "type": "integer"
+                  },
                   "productos": {
                     "type": "array",
                     "items": {
                       "type": "object",
                       "properties": {
-                        "idProducto": { "type": "integer" },
-                        "cantidadVendida": { "type": "integer" },
-                        "subtotal": { "type": "number" }
+                        "idProducto": {
+                          "type": "integer"
+                        },
+                        "cantidadVendida": {
+                          "type": "integer"
+                        },
+                        "subtotal": {
+                          "type": "number"
+                        }
                       }
                     }
                   }
@@ -155,79 +427,155 @@
           }
         },
         "responses": {
-          "201": { "description": "Venta creada exitosamente" }
+          "201": {
+            "description": "Venta creada exitosamente"
+          }
         }
       }
     },
-
     "/detalle_ventas/{idVenta}": {
       "get": {
         "summary": "Detalle de una venta",
-        "tags": ["Ventas"],
+        "tags": [
+          "Ventas"
+        ],
         "parameters": [
-          { "name": "idVenta", "in": "path", "required": true, "schema": { "type": "integer" } }
+          {
+            "name": "idVenta",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Detalle de productos vendidos" }
+          "200": {
+            "description": "Detalle de productos vendidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VentaDetalle"
+                }
+              }
+            }
+          }
         }
       }
     },
-
     "/stock": {
       "get": {
         "summary": "Listar productos del stock",
-        "tags": ["Stock"],
+        "tags": [
+          "Stock"
+        ],
         "parameters": [
-          { "name": "producto", "in": "query", "schema": { "type": "string" } },
-          { "name": "pagina", "in": "query", "schema": { "type": "integer" } },
-          { "name": "limite", "in": "query", "schema": { "type": "integer" } }
+          {
+            "name": "producto",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "pagina",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "limite",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Lista de productos" }
+          "200": {
+            "description": "Lista de productos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Producto"
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "post": {
         "summary": "Crear producto",
-        "tags": ["Stock"],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/Producto" }
-            }
-          }
-        },
-        "responses": {
-          "201": { "description": "Producto creado" }
-        }
-      }
-    },
-
-    "/stock/{id}": {
-      "put": {
-        "summary": "Actualizar producto",
-        "tags": ["Stock"],
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        "tags": [
+          "Stock"
         ],
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/Producto" }
+              "schema": {
+                "$ref": "#/components/schemas/Producto"
+              }
             }
           }
         },
         "responses": {
-          "200": { "description": "Producto actualizado" }
+          "201": {
+            "description": "Producto creado"
+          }
         }
       }
     },
-
+    "/stock/{id}": {
+      "put": {
+        "summary": "Actualizar producto",
+        "tags": [
+          "Stock"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Producto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Producto actualizado"
+          }
+        }
+      }
+    },
     "/stockelim/{id}": {
       "put": {
         "summary": "Cambiar estado del producto (borrado lógico)",
-        "tags": ["Stock"],
+        "tags": [
+          "Stock"
+        ],
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
         ],
         "requestBody": {
           "content": {
@@ -235,86 +583,264 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "estado": { "type": "string", "example": "Disponible" }
+                  "estado": {
+                    "type": "string",
+                    "example": "Disponible"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Estado actualizado" }
+          "200": {
+            "description": "Estado actualizado"
+          }
         }
       }
     },
-
     "/clientes": {
       "get": {
         "summary": "Listar clientes",
-        "tags": ["Clientes"],
+        "tags": [
+          "Clientes"
+        ],
         "parameters": [
-          { "name": "nombre", "in": "query", "schema": { "type": "string" } }
+          {
+            "name": "nombre",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Lista de clientes" }
+          "200": {
+            "description": "Lista de clientes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Cliente"
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "post": {
         "summary": "Crear cliente",
-        "tags": ["Clientes"],
+        "tags": [
+          "Clientes"
+        ],
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "dni": { "type": "string" },
-                  "nombre_apellidoCli": { "type": "string" },
-                  "direccion": { "type": "string" },
-                  "contacto": { "type": "string" }
-                }
+                "$ref": "#/components/schemas/Cliente"
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Cliente creado" }
+          "201": {
+            "description": "Cliente creado"
+          }
         }
       }
     },
-
     "/empleados": {
       "get": {
-        "summary": "Listar empleados",
-        "tags": ["Empleados"],
+        "summary": "Obtiene la lista de todos los empleados",
+        "tags": [
+          "Empleados"
+        ],
+        "operationId": "getAllEmpleados",
         "parameters": [
-          { "name": "nombre", "in": "query", "schema": { "type": "string" } }
+          {
+            "in": "query",
+            "name": "nombre",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filtra los empleados por nombre (opcional)",
+            "required": false
+          }
         ],
         "responses": {
-          "200": { "description": "Lista de empleados" }
+          "200": {
+            "description": "Lista de empleados obtenida exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Empleado"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error al obtener empleados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Error al obtener empleados"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "post": {
-        "summary": "Crear empleado",
-        "tags": ["Empleados"],
+        "summary": "Crea un nuevo empleado",
+        "tags": [
+          "Empleados"
+        ],
+        "operationId": "createEmpleado",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/Empleado" }
+              "schema": {
+                "$ref": "#/components/schemas/EmpleadoCreacion"
+              }
             }
           }
         },
         "responses": {
-          "201": { "description": "Empleado creado" }
+          "201": {
+            "description": "Empleado creado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Empleado creado"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos incompletos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Datos incompletos"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error al crear empleado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Error al crear empleado"
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
-
+    "/empleados/{id}": {
+      "put": {
+        "summary": "Actualiza un empleado existente por ID",
+        "tags": [
+          "Empleados"
+        ],
+        "operationId": "updateEmpleado",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "integer"
+            },
+            "required": true,
+            "description": "DNI del empleado a actualizar"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmpleadoUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Empleado actualizado exitosamente",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Empleado actualizado"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error al actualizar empleado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "example": "Error al actualizar empleado"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/roles": {
       "get": {
         "summary": "Listar todos los roles",
-        "tags": ["Roles"],
+        "tags": [
+          "Roles"
+        ],
         "responses": {
-          "200": { 
+          "200": {
             "description": "Lista de roles",
             "content": {
               "application/json": {
@@ -331,46 +857,8 @@
       },
       "post": {
         "summary": "Crear un nuevo rol",
-        "tags": ["Roles"],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/Rol" }
-            }
-          }
-        },
-        "responses": {
-          "201": { "description": "Rol creado" },
-          "400": { "description": "Datos incompletos" }
-        }
-      }
-    },
-
-    "/roles/{id}": {
-      "get": {
-        "summary": "Obtener rol por ID",
-        "tags": ["Roles"],
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
-        ],
-        "responses": {
-          "200": { 
-            "description": "Detalle del rol",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Rol" }
-              }
-            }
-          },
-          "404": { "description": "Rol no encontrado" }
-        }
-      },
-      "put": {
-        "summary": "Actualizar rol por ID",
-        "tags": ["Roles"],
-        "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        "tags": [
+          "Roles"
         ],
         "requestBody": {
           "required": true,
@@ -379,41 +867,162 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "rol": { "type": "string", "description": "Nombre del rol (ej: admin, vendedor)." }
+                  "rol": {
+                    "type": "string",
+                    "description": "Nombre del rol (ej: admin, vendedor).",
+                    "example": "Vendedor"
+                  }
+                },
+                "required": [
+                  "rol"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Rol creado"
+          },
+          "400": {
+            "description": "Datos incompletos"
+          }
+        }
+      }
+    },
+    "/roles/{id}": {
+      "get": {
+        "summary": "Obtener rol por ID",
+        "tags": [
+          "Roles"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle del rol",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Rol"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Rol no encontrado"
+          }
+        }
+      },
+      "put": {
+        "summary": "Actualizar rol por ID",
+        "tags": [
+          "Roles"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rol": {
+                    "type": "string",
+                    "description": "Nombre del rol (ej: admin, vendedor).",
+                    "example": "Administrador"
+                  }
                 }
               }
             }
           }
         },
         "responses": {
-          "200": { "description": "Rol actualizado" },
-          "400": { "description": "Datos incompletos" },
-          "404": { "description": "Rol no encontrado para actualizar" }
+          "200": {
+            "description": "Rol actualizado"
+          },
+          "400": {
+            "description": "Datos incompletos"
+          },
+          "404": {
+            "description": "Rol no encontrado para actualizar"
+          }
         }
       },
       "delete": {
         "summary": "Eliminar rol por ID",
-        "tags": ["Roles"],
+        "tags": [
+          "Roles"
+        ],
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Rol eliminado" },
-          "404": { "description": "Rol no encontrado para eliminar" },
-          "409": { "description": "No se puede eliminar el rol, ya que está asignado a empleados." }
+          "200": {
+            "description": "Rol eliminado"
+          },
+          "404": {
+            "description": "Rol no encontrado para eliminar"
+          },
+          "409": {
+            "description": "No se puede eliminar el rol, ya que está asignado a empleados."
+          }
         }
       }
     },
-    
     "/sucursales": {
       "get": {
         "summary": "Listar sucursales",
-        "tags": ["Sucursales"],
+        "tags": [
+          "Sucursales"
+        ],
         "parameters": [
-          { "name": "filtro", "in": "query", "schema": { "type": "string" } }
+          {
+            "name": "filtro",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
-          "200": { "description": "Lista de sucursales" }
+          "200": {
+            "description": "Lista de sucursales",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Sucursal"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
