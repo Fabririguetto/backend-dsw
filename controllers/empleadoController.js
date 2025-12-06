@@ -20,11 +20,11 @@ class EmpleadoController {
             sucursal, 
             email, 
             password, 
-            idrol
+            rol
         } = req.body;
 
-        if (!DNI_CUIL || !nombre_apellidoEmp || !contacto || !sucursal || !email || !password || !idrol) {
-            return res.status(400).json({ error: 'Datos incompletos' });
+        if (!DNI_CUIL || !nombre_apellidoEmp || !contacto || !email || !password || !rol || !sucursal) {
+            return res.status(400).json({ error: "Datos incompletos" });
         }
 
         try {
@@ -35,7 +35,7 @@ class EmpleadoController {
                 sucursal,
                 email,
                 password,
-                idrol
+                rol
             });
 
             res.status(201).json({ message: 'Empleado creado' });
