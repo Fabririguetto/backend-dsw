@@ -21,9 +21,8 @@ class AuthController {
         try {
             connection = await getConnection();
 
-            // Buscar usuario por email
             const [rows] = await connection.execute(
-                'SELECT * FROM empleados WHERE email = ? LIMIT 1',
+                'SELECT emp.*, r.rol FROM empleados AS emp INNER JOIN rol AS r ON r.idrol = emp.idrol WHERE email = ? LIMIT 1',
                 [email]
             );
 
@@ -44,7 +43,7 @@ class AuthController {
                     rol: user.rol,
                     nombre: user.nombre_apellidoEmp,
                 },
-                process.env.JWT_SECRET || 'secreto_super_seguro',
+                process.env.JWT_SECRET || '550e8400-e29b-41d4-a716-446655440000',
                 { expiresIn: '8h' }
             );
 

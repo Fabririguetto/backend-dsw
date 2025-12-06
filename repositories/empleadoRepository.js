@@ -11,10 +11,8 @@ class EmpleadoRepository {
                 emp.nombre_apellidoEmp, 
                 emp.contacto, 
                 emp.email,
-                emp.idrol,
                 r.rol,
-                suc.nombreSucursal, 
-                suc.idSucursal
+                suc.nombreSucursal 
             FROM empleados emp
             INNER JOIN sucursales suc ON emp.idSucursal = suc.idSucursal
             INNER JOIN rol r ON emp.idrol = r.idrol

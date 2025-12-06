@@ -31,6 +31,7 @@ const empleadoRoutes = require('./routes/empleados');
 const sucursalRoutes = require('./routes/sucursales');
 const detalleVentaRoutes = require('./routes/cargadetalleventa');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const rolesRoutes = require('./routes/roles');
 
 const app = express();
 
@@ -49,11 +50,11 @@ app.use('/empleados', empleadoRoutes);
 app.use('/sucursales', sucursalRoutes);
 app.use('/detalle_ventas', detalleVentaRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/roles', rolesRoutes);
 
 const PORT = process.env.PORT || 3500;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
-    // Solo mostramos la URL de Swagger si el documento se cargó (no está vacío)
     if (Object.keys(swaggerDocument).length > 0) {
         console.log(`Documentación Swagger disponible en http://localhost:${PORT}/api-docs`);
     } else {
