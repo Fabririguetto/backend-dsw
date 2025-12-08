@@ -33,9 +33,13 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const rolRoutes = require('./routes/roles');
 
 const app = express();
+const allowedOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000'
 
-
-app.use(cors());
+app.use(cors({
+    origin: allowedOrigin,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 app.use(express.json());
 
 
