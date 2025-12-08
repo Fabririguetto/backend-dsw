@@ -37,6 +37,7 @@ class EmpleadoRepository {
 async create(data) {
     const connection = await getConnection();
 
+    // Encriptar la contraseña antes de insertarla
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(data.password, saltRounds);
 
@@ -52,8 +53,8 @@ async create(data) {
         data.contacto,
         data.sucursal,
         data.email,
-        hashedPassword,
-        data.rol
+        hashedPassword, // <-- usar el hash
+        data.idrol
     ]);
 
     connection.release();
