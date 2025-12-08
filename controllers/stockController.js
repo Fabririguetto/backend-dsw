@@ -26,9 +26,13 @@ class StockController {
 
     async create(req, res) {
         const { articulo, descripcion, cantidad, monto } = req.body;
-        
+
         if (!articulo || !descripcion || !cantidad || !monto) {
             return res.status(400).json({ error: 'Datos incompletos para crear producto' });
+        }
+        
+        if (isNaN(Number(cantidad)) || isNaN(Number(monto))) {
+            return res.status(400).json({ error: 'Cantidad y monto deben ser números válidos.' });
         }
         
         try {
@@ -41,34 +45,40 @@ class StockController {
     }
 
     async update(req, res) {
-        const { id } = req.params;
-        const dataToUpdate = req.body;
+            const { id } = req.params;
+            const dataToUpdate = req.body;
 
-        const sanitizedData = Object.keys(dataToUpdate).reduce((acc, key) => {
-            const value = dataToUpdate[key];
-            if (value !== undefined) {
-                if ((key === 'cantidad' || key === 'monto') && (value === '' || value === null)) {
-                    acc[key] = null;
-                } else {
-                    acc[key] = value;
-                }
+            if ('cantidad' in dataToUpdate && dataToUpdate.cantidad !== null && isNaN(Number(dataToUpdate.cantidad))) {
+                return res.status(400).json({ error: 'El campo "cantidad" debe ser un número entero válido.' });
             }
-            return acc;
-        }, {});
-        
-        if (Object.keys(sanitizedData).length === 0) {
-            return res.status(400).json({ error: 'No se proporcionaron datos válidos para actualizar.' });
-        }
+            if ('monto' in dataToUpdate && dataToUpdate.monto !== null && isNaN(Number(dataToUpdate.monto))) {
+                return res.status(400).json({ error: 'El campo "monto" debe ser un número válido.' });
+            }
 
-        try {
-            await stockRepository.update(id, sanitizedData); 
-            res.json({ message: 'Producto actualizado' });
-        } catch (error) {
-            console.error('Error al actualizar producto:', error);
-            res.status(500).json({ error: 'Error al actualizar producto' });
-        }
-    }
+            const sanitizedData = Object.keys(dataToUpdate).reduce((acc, key) => {
+                const value = dataToUpdate[key];
+                if (value !== undefined) {
+                    if ((key === 'cantidad' || key === 'monto') && (value === '' || value === null)) {
+                        acc[key] = null;
+                    } else {
+                        acc[key] = value;
+                    }
+                }
+                return acc;
+            }, {});
+            
+            if (Object.keys(sanitizedData).length === 0) {
+                return res.status(400).json({ error: 'No se proporcionaron datos válidos para actualizar.' });
+            }
 
+            try {
+                await stockRepository.update(id, sanitizedData); 
+                res.json({ message: 'Producto actualizado' });
+            } catch (error) {
+                console.error('Error al actualizar producto:', error);
+                res.status(500).json({ error: 'Error al actualizar producto' });
+            }
+        }
     async updateEstado(req, res) {
         const { id } = req.params;
         const { estado } = req.body; 

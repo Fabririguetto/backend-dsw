@@ -2,6 +2,7 @@ const dashboardRepository = require('../repositories/dashboardRepository');
 
 class DashboardController {
     
+    rolrequired = 'admin';
     async getEstadisticas(req, res) {
         try {
             const estadisticas = await dashboardRepository.getEstadisticasCompletas();
