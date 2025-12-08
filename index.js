@@ -51,7 +51,7 @@ if (Object.keys(swaggerDocument).length > 0) {
 // Mapeamos los archivos de ruta a prefijos URL
 
 // Rutas sin prefijo (Ej: /login, /estadisticas)
-app.use('/', authRoutes); 
+app.use('/auth', authRoutes);
 
 // Rutas de Recurso (Ej: /ventas, /stock/critico, etc.)
 app.use('/ventas', ventaRoutes);
@@ -64,7 +64,7 @@ app.use('/sucursales', sucursalRoutes);
 // NOTA: Si tu hook llama a /estadisticas, debe estar sin prefijo. 
 // Si tu hook llama a /api/dashboard/estadisticas, usa app.use('/api/dashboard', dashboardRoutes);
 // Basado en el hook, usaremos solo el endpoint raíz:
-app.use('/estadisticas', dashboardRoutes); 
+app.use('/api/dashboard', dashboardRoutes);
 
 
 const PORT = process.env.PORT || 3500;
