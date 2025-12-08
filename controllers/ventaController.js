@@ -10,7 +10,6 @@ class VentaController {
             const pageValue = Math.max(0, parseInt(pagina, 10));
             const offsetValue = pageValue * limitValue;
 
-            // Obtenemos datos + total
             const resultado = await ventaService.obtenerVentas({ 
                 limit: limitValue, 
                 offset: offsetValue, 

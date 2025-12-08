@@ -7,12 +7,10 @@ class AuthController {
     async login(req, res) {
         const { email, password } = req.body;
 
-        // Validaciones iniciales
         if (!email || !password) {
             return res.status(400).json({ error: 'Email y contraseña son obligatorios.' });
         }
 
-        // Validación mínima de email
         if (!/\S+@\S+\.\S+/.test(email)) {
             return res.status(400).json({ error: 'Email inválido.' });
         }

@@ -854,146 +854,48 @@
             }
           }
         }
-      },
-      "post": {
-        "summary": "Crear un nuevo rol",
-        "tags": [
-          "Roles"
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "rol": {
-                    "type": "string",
-                    "description": "Nombre del rol (ej: admin, vendedor).",
-                    "example": "Vendedor"
-                  }
+      }
+    },
+"/roles/{id}": {
+        "get": {
+            "tags": [
+                "Roles"
+            ],
+            "summary": "Obtener Rol por ID",
+            "description": "Busca y retorna un único rol utilizando su identificador.",
+            "parameters": [
+                {
+                    "name": "id",
+                    "in": "path",
+                    "description": "ID del rol a obtener",
+                    "required": true,
+                    "schema": {
+                        "type": "integer",
+                        "format": "int32"
+                    }
+                }
+            ],
+            "responses": {
+                "200": {
+                    "description": "Rol encontrado y retornado exitosamente.",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Rol"
+                            }
+                        }
+                    }
                 },
-                "required": [
-                  "rol"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Rol creado"
-          },
-          "400": {
-            "description": "Datos incompletos"
-          }
-        }
-      }
-    },
-    "/roles/{id}": {
-      "get": {
-        "summary": "Obtener rol por ID",
-        "tags": [
-          "Roles"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Detalle del rol",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Rol"
+                "404": {
+                    "description": "Rol no encontrado con el ID especificado."
+                },
+                "500": {
+                    "description": "Error interno del servidor."
                 }
-              }
             }
-          },
-          "404": {
-            "description": "Rol no encontrado"
-          }
         }
       },
-      "put": {
-        "summary": "Actualizar rol por ID",
-        "tags": [
-          "Roles"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "rol": {
-                    "type": "string",
-                    "description": "Nombre del rol (ej: admin, vendedor).",
-                    "example": "Administrador"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Rol actualizado"
-          },
-          "400": {
-            "description": "Datos incompletos"
-          },
-          "404": {
-            "description": "Rol no encontrado para actualizar"
-          }
-        }
-      },
-      "delete": {
-        "summary": "Eliminar rol por ID",
-        "tags": [
-          "Roles"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Rol eliminado"
-          },
-          "404": {
-            "description": "Rol no encontrado para eliminar"
-          },
-          "409": {
-            "description": "No se puede eliminar el rol, ya que está asignado a empleados."
-          }
-        }
-      }
-    },
+      
     "/sucursales": {
       "get": {
         "summary": "Listar sucursales",

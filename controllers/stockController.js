@@ -24,7 +24,6 @@ class StockController {
         }
     }
 
-    // MÉTODO REQUERIDO POR POST /stock
     async create(req, res) {
         const { articulo, descripcion, cantidad, monto } = req.body;
         
@@ -41,16 +40,13 @@ class StockController {
         }
     }
 
-    // MÉTODO REQUERIDO POR PUT /stock/:id (LÍNEA 13 en routes/stock.js)
     async update(req, res) {
         const { id } = req.params;
         const dataToUpdate = req.body;
 
-        // Limpieza de datos (convierte '' y null a null para mysql2)
         const sanitizedData = Object.keys(dataToUpdate).reduce((acc, key) => {
             const value = dataToUpdate[key];
             if (value !== undefined) {
-                // Conversión a null para campos numéricos vacíos
                 if ((key === 'cantidad' || key === 'monto') && (value === '' || value === null)) {
                     acc[key] = null;
                 } else {
@@ -73,7 +69,6 @@ class StockController {
         }
     }
 
-    // MÉTODO REQUERIDO POR PUT /stockelim/:id
     async updateEstado(req, res) {
         const { id } = req.params;
         const { estado } = req.body; 

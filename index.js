@@ -23,7 +23,6 @@ try {
 }
 
 
-// --- 2. IMPORTACIONES DE RUTAS ---
 const authRoutes = require('./routes/auth');
 const ventaRoutes = require('./routes/ventas');
 const stockRoutes = require('./routes/stock');
@@ -31,6 +30,7 @@ const clienteRoutes = require('./routes/clientes');
 const empleadoRoutes = require('./routes/empleados');
 const sucursalRoutes = require('./routes/sucursales');
 const dashboardRoutes = require('./routes/dashboardRoutes'); 
+const rolRoutes = require('./routes/roles');
 
 const app = express();
 
@@ -51,7 +51,7 @@ app.use('/stock', stockRoutes);
 app.use('/clientes', clienteRoutes);
 app.use('/empleados', empleadoRoutes);
 app.use('/sucursales', sucursalRoutes);
-
+app.use('/roles', rolRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
 

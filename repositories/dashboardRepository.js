@@ -20,7 +20,6 @@ class DashboardRepository {
                 [fechaInicio, fechaFin]
             );
             
-            // Sumar ingresos del mes pasado
             const [ingresosResult] = await connection.execute(
                 `SELECT COALESCE(SUM(montoTotal), 0) as total_ingresos FROM ventas 
                 WHERE DATE(fechaHoraVenta) BETWEEN ? AND ?`,
@@ -48,7 +47,6 @@ class DashboardRepository {
                 ORDER BY cantidad ASC`
             );
             
-            // Productos sin stock
             const [sinStock] = await connection.execute(
                 `SELECT idProducto, articulo, descripcion, cantidad 
                 FROM productos 
@@ -65,7 +63,6 @@ class DashboardRepository {
     async getProductosMasVendidos() {
         const connection = await getConnection();
         try {
-            // Productos más vendidos en los últimos 30 días
             const [productos] = await connection.execute(`
                 SELECT p.idProducto, p.articulo, p.descripcion, 
                 SUM(pv.cantidadVendida) as total_vendido
@@ -88,7 +85,6 @@ class DashboardRepository {
     async getTopVendedores() {
         const connection = await getConnection();
         try {
-            // Top vendedores últimos 30 días
             const [vendedores] = await connection.execute(`
                 SELECT e.DNI_CUIL as idEmpleado, e.nombre_apellidoEmp,
                     COUNT(v.idVenta) as total_ventas,

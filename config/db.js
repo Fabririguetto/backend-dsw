@@ -1,21 +1,18 @@
-require('dotenv').config(); // Carga las variables del archivo .env
+require('dotenv').config();
 const mysql = require('mysql2/promise');
 
-// Configuración tomada del archivo .env
 const conexionConfig = {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || 'root', // Si en .env está vacío, usa ''
+    password: process.env.DB_PASSWORD || 'root', 
     database: process.env.DB_NAME || 'dsw_gestion',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 };
 
-// Creamos el pool una sola vez
 const pool = mysql.createPool(conexionConfig);
 
-// Función helper para obtener una conexión del pool
 async function getConnection() {
     try {
         const connection = await pool.getConnection();
@@ -26,7 +23,6 @@ async function getConnection() {
     }
 }
 
-// Test de conexión al iniciar la app (Solo para verificar en consola)
 pool.getConnection()
     .then(connection => {
         console.log('Base de datos conectada');
