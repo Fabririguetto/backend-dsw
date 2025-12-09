@@ -56,12 +56,10 @@ app.use(cors({
 
 app.use(express.json());
 
-// Swagger
 if (Object.keys(swaggerDocument).length > 0) {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 }
 
-// Rutas
 app.use('/auth', authRoutes);
 app.use('/ventas', ventaRoutes);
 app.use('/stock', stockRoutes);
@@ -77,9 +75,10 @@ if (require.main === module) {
     app.listen(PORT, () => {
         console.log(`Servidor corriendo en el puerto ${PORT}`);
         if (Object.keys(swaggerDocument).length > 0) {
-            console.log(`Documentación Swagger disponible en http://localhost:${PORT}/api-docs`);
+            console.log(`Documentación Swagger disponible en https://backend-dsw-production-9f5c.up.railway.app/api-docs`);
         }
     });
 }
+
 
 module.exports = { app };
