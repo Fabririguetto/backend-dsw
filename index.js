@@ -35,7 +35,7 @@ const rolRoutes = require('./routes/roles');
 const app = express();
 
 const allowedOrigins = process.env.CORS_ORIGINS 
-    ? process.env.CORS_ORIGINS.split(',') 
+    ? process.env.CORS_ORIGIN.split(',') 
     : ['http://localhost:3000'];
 
 app.use(cors({
