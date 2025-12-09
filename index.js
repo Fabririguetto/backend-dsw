@@ -33,13 +33,28 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const rolRoutes = require('./routes/roles');
 
 const app = express();
-const allowedOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000'
+
+const allowedOrigins = process.env.CORS_ORIGINS 
+    ? process.env.CORS_ORIGINS.split(',') 
+    : ['http://localhost:3000'];
 
 app.use(cors({
-    origin: allowedOrigin,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
+    origin: function (origin, callback) {
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = `El origen ${origin} no tiene permiso de acceso.`;
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204
 }));
+
 app.use(express.json());
 
 
