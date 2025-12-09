@@ -6,7 +6,6 @@ const fs = require('fs');
 const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 
-
 let swaggerDocument = {};
 try {
     const swaggerPath = path.join(__dirname, '.', 'swagger.json');
@@ -22,7 +21,6 @@ try {
     console.error("Detalle del error:", error.message);
 }
 
-
 const authRoutes = require('./routes/auth');
 const ventaRoutes = require('./routes/ventas');
 const stockRoutes = require('./routes/stock');
@@ -34,18 +32,19 @@ const rolRoutes = require('./routes/roles');
 
 const app = express();
 
-const allowedOrigins = process.env.CORS_ORIGINS 
-    ? process.env.CORS_ORIGIN.split(',') 
+const allowedOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',')
     : ['http://localhost:3000'];
 
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.indexOf(origin) === -1) {
+
+        if (!allowedOrigins.includes(origin)) {
             const msg = `El origen ${origin} no tiene permiso de acceso.`;
             return callback(new Error(msg), false);
         }
+
         return callback(null, true);
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -57,14 +56,13 @@ app.use(cors({
 
 app.use(express.json());
 
-
+// Swagger
 if (Object.keys(swaggerDocument).length > 0) {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 }
 
+// Rutas
 app.use('/auth', authRoutes);
-
-
 app.use('/ventas', ventaRoutes);
 app.use('/stock', stockRoutes);
 app.use('/clientes', clienteRoutes);
@@ -73,9 +71,7 @@ app.use('/sucursales', sucursalRoutes);
 app.use('/roles', rolRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-
 const PORT = process.env.PORT || 3500;
-
 
 if (require.main === module) { 
     app.listen(PORT, () => {
