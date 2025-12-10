@@ -72,9 +72,8 @@ beforeAll(async () => {
 
 describe('🚀 Test de Integración: Autorización de Actualización y Creación de Stock (/stock)', () => {
 
-    // ----------------------------------------------------------------------
-    //                  TESTS DE AUTORIZACIÓN (PUT /stock/:id)
-    // ----------------------------------------------------------------------
+
+    // Test de autorizacion
 
     test('1. PUT /stock/:id debe ser exitoso (200/204) si el usuario es Admin', async () => {
         const response = await request(app)
@@ -120,10 +119,6 @@ describe('🚀 Test de Integración: Autorización de Actualización y Creación
         expect(response.statusCode).toBe(400); 
         expect(response.body).toHaveProperty('error');
     });
-
-    // ----------------------------------------------------------------------
-    // ⬅️ TESTS AÑADIDOS DE AUTORIZACIÓN Y VALIDACIÓN (POST /stock)
-    // ----------------------------------------------------------------------
 
     test('5. POST /stock debe ser exitoso (201 Created) si el usuario es Admin', async () => {
         const response = await request(app)

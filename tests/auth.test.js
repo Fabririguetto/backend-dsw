@@ -1,10 +1,10 @@
 const request = require('supertest');
 const express = require('express');
 
-describe('✅ Tests Básicos de Autenticación (Garantizados)', () => {
+describe('Tests Básicos de Autenticación', () => {
 let app;
 
-// Crear una app express de prueba
+// Creamos una app express de prueba
 beforeAll(() => {
     app = express();
     app.use(express.json());
