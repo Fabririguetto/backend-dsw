@@ -71,6 +71,9 @@ app.use('/api/dashboard', dashboardRoutes);
 
 const PORT = process.env.PORT || 3500;
 
+console.log('DEBUG: El valor de process.env.PORT es:', process.env.PORT);
+console.log('DEBUG: El servidor Express usará el puerto:', PORT);
+
 if (require.main === module) { 
     app.listen(PORT, () => {
         console.log(`Servidor corriendo en el puerto ${PORT}`);
