@@ -43,8 +43,8 @@ beforeAll(async () => {
     const adminLoginResponse = await request(app)
         .post('/auth/login')
         .send({
-            email: 'admin@test.com', 
-            password: 'admin123'
+            email: 'martin.redaelli@hotmail.com', 
+            password: '123456'
         });
 
     if (adminLoginResponse.statusCode === 200 && adminLoginResponse.body.token) {

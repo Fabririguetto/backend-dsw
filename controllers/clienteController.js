@@ -1,7 +1,7 @@
 const clienteRepository = require('../repositories/clienteRepository');
 
 class ClienteController {
-    
+
     async getAll(req, res) {
         try {
             const clientes = await clienteRepository.findAll(req.query.nombre);
@@ -23,18 +23,22 @@ class ClienteController {
 
     async create(req, res) {
         try {
-            const id = await clienteRepository.create(req.body);
-            res.json({ id, ...req.body });
+            const data = req.body.sanitizedInput;
+            const id = await clienteRepository.create(data);
+            res.status(201).json({ id, ...data });
         } catch (error) {
+            console.error('ERROR CREATE CLIENTE:', error);
             res.status(500).json({ error: 'Error al crear cliente' });
         }
     }
 
     async update(req, res) {
         try {
-            await clienteRepository.update(req.params.id, req.body);
+            const data = req.body.sanitizedInput;
+            await clienteRepository.update(req.params.id, data);
             res.json({ message: 'Cliente actualizado' });
         } catch (error) {
+            console.error('ERROR UPDATE CLIENTE:', error);
             res.status(500).json({ error: 'Error al actualizar cliente' });
         }
     }

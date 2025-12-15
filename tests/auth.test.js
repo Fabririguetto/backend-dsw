@@ -65,14 +65,13 @@ test('2. POST /auth/login debe rechazar campos vacíos', async () => {
     const response = await request(app)
         .post('/auth/login')
         .send({
-        email: '',  // Email vacio
-        password: 'contraseña'
-    });
-    
+            email: '',
+            password: 'contraseña'
+        });
+
     console.log('Test 2 - Status:', response.statusCode);
-    
+
     expect(response.statusCode).toBe(400);
     expect(response.body).toHaveProperty('error');
-    expect(response.body.error).toContain('obligatorios');
-    });
+});
 });

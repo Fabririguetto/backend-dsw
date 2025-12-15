@@ -25,20 +25,58 @@ class ClienteRepository {
     }
 
     async create(data) {
-        const connection = await getConnection();
-        const query = 'INSERT INTO clientes (dni, nombre_apellidoCli, direccion, contacto) VALUES (?, ?, ?, ?)';
-        const [result] = await connection.execute(query, [data.dni, data.nombre_apellidoCli, data.direccion, data.contacto]);
-        connection.release();
-        return result.insertId;
+    const connection = await getConnection();
+
+    const fields = [];
+    const values = [];
+
+    for (const key in data) {
+        fields.push(key);
+        values.push(data[key]);
     }
 
-    async update(id, data) {
-        const connection = await getConnection();
-        const query = 'UPDATE clientes SET dni = ?, nombre_apellidoCli = ?, direccion = ?, contacto = ? WHERE idCliente = ?';
-        const [result] = await connection.execute(query, [data.dni, data.nombre_apellidoCli, data.direccion, data.contacto, id]);
-        connection.release();
-        return result;
+    if (fields.length === 0) {
+        throw new Error('No hay datos para insertar');
     }
+
+    const placeholders = fields.map(() => '?').join(', ');
+    const query = `
+        INSERT INTO clientes (${fields.join(', ')})
+        VALUES (${placeholders})
+    `;
+
+    const [result] = await connection.execute(query, values);
+    connection.release();
+    return result.insertId;
+}
+
+    async update(id, data) {
+    const connection = await getConnection();
+
+    const fields = [];
+    const values = [];
+
+    for (const key in data) {
+        fields.push(`${key} = ?`);
+        values.push(data[key]);
+    }
+
+    if (fields.length === 0) {
+        throw new Error('No hay datos para actualizar');
+    }
+
+    values.push(id);
+
+    const query = `
+        UPDATE clientes
+        SET ${fields.join(', ')}
+        WHERE idCliente = ?
+    `;
+
+    const [result] = await connection.execute(query, values);
+    connection.release();
+    return result;
+}
 }
 
 module.exports = new ClienteRepository();
