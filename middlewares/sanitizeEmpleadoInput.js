@@ -6,7 +6,7 @@ function sanitizeEmpleadoInput(req, res, next) {
         sucursal: req.body.sucursal,
         email: req.body.email,
         password: req.body.password,
-        idrol: req.body.idrol
+        rol: req.body.rol
     };
 
     Object.keys(req.body.sanitizedInput).forEach((key) => {

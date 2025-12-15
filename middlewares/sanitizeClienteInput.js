@@ -3,6 +3,7 @@ module.exports = (req, res, next) => {
         dni: req.body.dni,
         nombre_apellidoCli: req.body.nombre_apellidoCli,
         contacto: req.body.contacto,
+        direccion: req.body.direccion,
         email: req.body.email
     };
 
