@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const rolController = require('../controllers/rolController');
+const { verifyToken, verifyAdmin } = require('../middlewares/authMiddleware');
 
-router.get('/', rolController.getAll); 
+router.get('/', verifyToken, verifyAdmin, rolController.getAll); 
 
-router.get('/:id', rolController.getById);
+router.get('/:id', verifyToken, verifyAdmin, rolController.getById);
 
 module.exports = router;

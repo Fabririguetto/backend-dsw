@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const clienteController = require('../controllers/clienteController');
+const { verifyToken } = require('../middlewares/authMiddleware');
 
-router.get('/', clienteController.getAll);
-router.get('/:dni', clienteController.getByDni);
-router.post('/', clienteController.create);
-router.put('/:id', clienteController.update);
+router.get('/', verifyToken, clienteController.getAll);
+router.get('/:dni', verifyToken, clienteController.getByDni);
+router.post('/', verifyToken, clienteController.create);
+router.put('/:id', verifyToken, clienteController.update);
 
 module.exports = router;
